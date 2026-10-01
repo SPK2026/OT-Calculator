@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OT Calculator Hub</title>
-  <!-- Lottie Animation Player CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-player/2.0.12/lottie-player.js"></script>
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -177,25 +175,36 @@
       color: #cbd5e1;
     }
 
-    /* Dynamic Smile Container */
+    /* Dynamic Smile Display Container */
     .smile-container {
-      height: 80px;
+      height: 65px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 10px;
+      margin-top: 8px;
+      font-size: 3rem;
     }
 
-    /* Walking Duck Container (Floating at card bottom) */
+    /* Animated Smile Emoji classes */
+    .smile-bounce {
+      display: inline-block;
+      animation: bounce 0.8s infinite alternate ease-in-out;
+    }
+    .smile-spin {
+      display: inline-block;
+      animation: spinPulse 1.2s infinite ease-in-out;
+    }
+
+    /* Walking Duck Container (Bottom of screen) */
     .duck-walk-container {
-      position: absolute;
-      bottom: -20px;
-      left: -120px;
-      width: 100px;
-      height: 100px;
+      position: fixed;
+      bottom: 20px;
+      left: -100px;
+      font-size: 3.5rem;
       pointer-events: none;
-      z-index: 10;
+      z-index: 100;
       display: none;
+      white-space: nowrap;
     }
 
     /* Pop & Blink Animations */
@@ -203,7 +212,7 @@
       animation: popEffect 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .blink-anim {
-      animation: blinkEffect 1.2s infinite alternate;
+      animation: blinkEffect 1s infinite alternate;
     }
 
     @keyframes popEffect {
@@ -217,10 +226,29 @@
       100% { color: #4ade80; text-shadow: 0 0 15px rgba(74, 222, 128, 0.9); }
     }
 
-    /* Duck Walking Across Screen Animation */
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-12px); }
+    }
+
+    @keyframes spinPulse {
+      0% { transform: scale(0.8) rotate(-10deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(0.8) rotate(-10deg); }
+    }
+
+    /* Walking Duck Across Screen Animation */
     @keyframes duckWalkAcross {
-      0% { left: -100px; opacity: 1; }
-      100% { left: 100%; opacity: 1; }
+      0% { left: -80px; transform: scaleX(1); }
+      100% { left: 100vw; transform: scaleX(1); }
+    }
+    .duck-waddle {
+      display: inline-block;
+      animation: waddle 0.3s infinite alternate;
+    }
+    @keyframes waddle {
+      0% { transform: rotate(-8deg); }
+      100% { transform: rotate(8deg); }
     }
   </style>
 </head>
@@ -328,19 +356,14 @@
       <div class="smile-container" id="r_smileBox"></div>
     </div>
   </div>
+</div>
 
-  <!-- Walking Duck Container -->
-  <div id="duckContainer" class="duck-walk-container">
-    <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_96bov9ig.json" background="transparent" speed="1.2" loop autoplay></lottie-player>
-  </div>
+<!-- Walking Duck Container -->
+<div id="duckContainer" class="duck-walk-container">
+  <span class="duck-waddle">🦆</span>
 </div>
 
 <script>
-// Lottie Animation Sources for Smiles
-const SMILE_LIGHT = "https://assets9.lottiefiles.com/packages/lf20_m64ro19e.json"; // Light Smile
-const SMILE_BIG = "https://assets3.lottiefiles.com/packages/lf20_k239m40m.json";   // Star/Big Smile
-const SMILE_HUGE = "https://assets8.lottiefiles.com/packages/lf20_xl8a598l.json";  // Laughing/Rich Smile
-
 // Switch Tabs
 function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
@@ -373,17 +396,17 @@ function updateTotal(prefix) {
   document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
 }
 
-// Trigger Walking Duck Animation for 0 Payout
+// Trigger Walking Duck Animation across screen for 0 Payout
 function triggerDuckWalk() {
   const duck = document.getElementById('duckContainer');
   duck.style.display = 'block';
   duck.style.animation = 'none';
   void duck.offsetWidth; // Reflow reset
-  duck.style.animation = 'duckWalkAcross 5s linear forwards';
+  duck.style.animation = 'duckWalkAcross 4s linear forwards';
   
   setTimeout(() => {
     duck.style.display = 'none';
-  }, 5000);
+  }, 4000);
 }
 
 // Render Dynamic Smile or Duck Based on Amount
@@ -392,7 +415,7 @@ function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
   const amountEl = document.getElementById(amountId);
   const smileBox = document.getElementById(smileBoxId);
 
-  // Clear previous animations
+  // Reset effects
   box.classList.remove('pop-anim');
   amountEl.classList.remove('blink-anim');
   smileBox.innerHTML = "";
@@ -403,19 +426,21 @@ function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
     box.classList.add('pop-anim');
     amountEl.classList.add('blink-anim');
 
-    // Choose Smile animation based on payout size
-    let smileUrl = SMILE_LIGHT;
+    // Dynamic smiles depending on size
+    let smileHTML = "";
     if (totalAmount > 20000) {
-      smileUrl = SMILE_HUGE;
-      // Confetti burst for big payouts!
+      smileHTML = `<span class="smile-spin">🤩🤑🎉</span>`;
+      // Gold Confetti burst
       if (typeof confetti === 'function') {
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
       }
     } else if (totalAmount > 5000) {
-      smileUrl = SMILE_BIG;
+      smileHTML = `<span class="smile-bounce">😄⭐</span>`;
+    } else {
+      smileHTML = `<span class="smile-bounce">🙂</span>`;
     }
 
-    smileBox.innerHTML = `<lottie-player src="${smileUrl}" background="transparent" speed="1" style="width: 70px; height: 70px;" loop autoplay></lottie-player>`;
+    smileBox.innerHTML = smileHTML;
   } else {
     // Trigger duck walking animation on zero payout
     triggerDuckWalk();
