@@ -21,7 +21,7 @@
       border: 2px solid #38bdf8;
       border-radius: 12px;
       padding: 25px;
-      max-width: 460px;
+      max-width: 480px;
       width: 100%;
       box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
     }
@@ -80,7 +80,7 @@
       color: #e2e8f0;
       font-size: 0.9rem;
     }
-    input[type="number"], select {
+    input[type="number"] {
       width: 100%;
       padding: 10px;
       border-radius: 6px;
@@ -90,7 +90,7 @@
       font-size: 0.95rem;
       box-sizing: border-box;
     }
-    input[type="number"]:focus, select:focus {
+    input[type="number"]:focus {
       border-color: #38bdf8;
       outline: none;
     }
@@ -100,17 +100,31 @@
       color: #38bdf8;
       font-weight: bold;
     }
+    
+    /* Checkbox & Options Card */
+    .option-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 10px;
     }
     .checkbox-group input {
       width: 18px;
       height: 18px;
       accent-color: #38bdf8;
+      cursor: pointer;
     }
+    .days-input {
+      margin-top: 10px;
+      display: none;
+    }
+
     .calc-btn {
       width: 100%;
       padding: 12px;
@@ -128,6 +142,8 @@
       background-color: #0284c7;
       color: #ffffff;
     }
+
+    /* Output Result Box */
     .result-box {
       margin-top: 20px;
       padding: 15px;
@@ -135,6 +151,7 @@
       background-color: #0f172a;
       text-align: center;
       border: 1px solid #334155;
+      transition: transform 0.3s ease;
     }
     .result-title {
       font-size: 0.85em;
@@ -149,6 +166,25 @@
     .result-reason {
       font-size: 0.8em;
       color: #cbd5e1;
+    }
+
+    /* Pop & Blink Animations */
+    .pop-anim {
+      animation: popEffect 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .blink-anim {
+      animation: blinkEffect 1.2s infinite alternate;
+    }
+
+    @keyframes popEffect {
+      0% { transform: scale(0.9); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes blinkEffect {
+      0% { color: #38bdf8; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); }
+      100% { color: #4ade80; text-shadow: 0 0 15px rgba(74, 222, 128, 0.9); }
     }
   </style>
 </head>
@@ -186,14 +222,16 @@
       <input type="number" id="b_csat" placeholder="Min. CSAT required: 62%" min="0" max="100">
     </div>
 
-    <div class="form-group checkbox-group">
-      <input type="checkbox" id="b_unsavedError">
-      <label for="b_unsavedError">More than 1 unsaved error</label>
+    <div class="form-group option-card">
+      <div class="checkbox-group">
+        <input type="checkbox" id="b_unsavedError">
+        <label for="b_unsavedError">More than 1 unsaved error</label>
+      </div>
     </div>
 
     <button class="calc-btn" onclick="calculateBonanza()">Calculate Bonanza Earnings</button>
 
-    <div class="result-box">
+    <div class="result-box" id="b_resultBox">
       <div class="result-title">Estimated Bonanza Payout</div>
       <div class="result-amount" id="b_payout">₹ 0</div>
       <div class="result-reason" id="b_details">Enter metrics to calculate.</div>
@@ -203,43 +241,59 @@
   <!-- REGULAR OT SECTION -->
   <div id="regularTab" class="tab-content">
     <h2>Regular Overtime</h2>
-    <div class="subtitle">STANDARD OT CALCULATOR</div>
+    <div class="subtitle">SELECT SHIFT TYPES & DAYS</div>
 
     <div class="form-group">
-      <label for="r_type">Select OT Shift Type:</label>
-      <select id="r_type">
-        <option value="workday">Regular Workday OT (45 Threshold)</option>
-        <option value="weekoff">6th Day Working / Week Off (From 1st Chat)</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="r_callCount">Call/Chat Count:</label>
+      <label for="r_callCount">Daily Average Call/Chat Count:</label>
       <input type="number" id="r_callCount" placeholder="Enter chats/calls" min="0" oninput="updateTotal('r')">
     </div>
 
     <div class="form-group">
-      <label for="r_emailCount">Email Count (3 Emails = 2 Chats):</label>
+      <label for="r_emailCount">Daily Average Email Count (3 Emails = 2 Chats):</label>
       <input type="number" id="r_emailCount" placeholder="Enter emails" min="0" oninput="updateTotal('r')">
     </div>
 
     <div class="form-group">
-      <label for="r_total">Total Equivalent Transactions (Auto):</label>
+      <label for="r_total">Daily Equivalent Transactions (Auto):</label>
       <input type="number" id="r_total" placeholder="0" readonly>
+    </div>
+
+    <!-- Regular Workday Option -->
+    <div class="option-card">
+      <div class="checkbox-group">
+        <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')">
+        <label for="r_chkWorkday">Regular Workday OT (Min Threshold: 45)</label>
+      </div>
+      <div class="days-input" id="r_daysWorkdayContainer">
+        <label for="r_daysWorkday">Number of Workdays:</label>
+        <input type="number" id="r_daysWorkday" value="1" min="1" placeholder="Enter days">
+      </div>
+    </div>
+
+    <!-- 6th Day / Week Off Option -->
+    <div class="option-card">
+      <div class="checkbox-group">
+        <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')">
+        <label for="r_chkWeekoff">6th Day Working / Week Off (From 1st Chat)</label>
+      </div>
+      <div class="days-input" id="r_daysWeekoffContainer">
+        <label for="r_daysWeekoff">Number of Week Off Days:</label>
+        <input type="number" id="r_daysWeekoff" value="1" min="1" placeholder="Enter days">
+      </div>
     </div>
 
     <button class="calc-btn" onclick="calculateRegular()">Calculate Regular OT</button>
 
-    <div class="result-box">
+    <div class="result-box" id="r_resultBox">
       <div class="result-title">Estimated Regular OT Payout</div>
       <div class="result-amount" id="r_payout">₹ 0</div>
-      <div class="result-reason" id="r_details">Enter transactions to calculate.</div>
+      <div class="result-reason" id="r_details">Select shift type & enter days to calculate.</div>
     </div>
   </div>
 </div>
 
 <script>
-// Switch between Tabs
+// Tab Switcher
 function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
   const contents = document.querySelectorAll('.tab-content');
@@ -256,16 +310,41 @@ function switchTab(tabName) {
   }
 }
 
-// Auto Update Equivalent Sum
+// Toggle Visibility of Days Inputs
+function toggleDaysInput(containerId) {
+  const container = document.getElementById(containerId);
+  const checkbox = container.previousElementSibling.querySelector('input[type="checkbox"]');
+  container.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+// Auto Update Transactions Volume
 function updateTotal(prefix) {
   const calls = parseInt(document.getElementById(prefix + '_callCount').value) || 0;
   const emails = parseInt(document.getElementById(prefix + '_emailCount').value) || 0;
-  
   const totalVolume = calls + (emails * (2 / 3));
   document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
 }
 
-// OT Bonanza Calculation (October Scheme)
+// Helper to Trigger Pop & Blink Effect
+function triggerPayoutAnimation(boxId, amountId, totalAmount) {
+  const box = document.getElementById(boxId);
+  const amountEl = document.getElementById(amountId);
+
+  // Reset animations
+  box.classList.remove('pop-anim');
+  amountEl.classList.remove('blink-anim');
+
+  if (totalAmount > 0) {
+    // Trigger pop effect on container
+    void box.offsetWidth; 
+    box.classList.add('pop-anim');
+    
+    // Add glowing blink effect to positive text
+    amountEl.classList.add('blink-anim');
+  }
+}
+
+// OT Bonanza Logic
 function calculateBonanza() {
   const calls = parseInt(document.getElementById('b_callCount').value) || 0;
   const emails = parseInt(document.getElementById('b_emailCount').value) || 0;
@@ -275,9 +354,9 @@ function calculateBonanza() {
   const totalVolume = calls + (emails * (2 / 3));
   document.getElementById('b_total').value = totalVolume.toFixed(2);
 
-  const rateTier1 = 22400 / 1270; // ~17.638
-  const rateTier2 = 35000 / 1340; // ~26.119
-  const rateTier3 = 45000 / 1390; // ~32.374
+  const rateTier1 = 22400 / 1270;
+  const rateTier2 = 35000 / 1340;
+  const rateTier3 = 45000 / 1390;
 
   let appliedRate = 0;
   let totalPayout = 0;
@@ -285,23 +364,23 @@ function calculateBonanza() {
 
   const meetsRiderConditions = (csat >= 62) && (!hasUnsavedError);
 
-  // Strict Threshold: 0 payout until meeting 1270 transactions
   if (totalVolume < 1270) {
     document.getElementById('b_payout').innerText = "₹ 0";
-    document.getElementById('b_details').innerText = `₹0 Payout: Minimum 1270 transactions required to qualify for OT Bonanza (Current: ${totalVolume.toFixed(2)}).`;
+    document.getElementById('b_details').innerText = `₹0 Payout: Minimum 1270 transactions required for Bonanza tier.`;
+    triggerPayoutAnimation('b_resultBox', 'b_payout', 0);
     return;
   }
 
   if (meetsRiderConditions) {
     if (totalVolume >= 1390) {
       appliedRate = rateTier3;
-      calculationNote = `Tier 3 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
+      calculationNote = `Tier 3 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} units).`;
     } else if (totalVolume >= 1340) {
       appliedRate = rateTier2;
-      calculationNote = `Tier 2 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
+      calculationNote = `Tier 2 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} units).`;
     } else {
       appliedRate = rateTier1;
-      calculationNote = `Tier 1 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
+      calculationNote = `Tier 1 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} units).`;
     }
     totalPayout = totalVolume * appliedRate;
   } else {
@@ -309,42 +388,62 @@ function calculateBonanza() {
     let reasonText = [];
     if (csat < 62) reasonText.push("CSAT is below 62%");
     if (hasUnsavedError) reasonText.push("More than 1 unsaved error");
-    
     calculationNote = `₹0 Payout: Criteria missed due to ${reasonText.join(" and ")}.`;
   }
 
   document.getElementById('b_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
   document.getElementById('b_details').innerText = calculationNote;
+
+  triggerPayoutAnimation('b_resultBox', 'b_payout', totalPayout);
 }
 
-// Regular OT Calculation
+// Regular OT Logic
 function calculateRegular() {
   const calls = parseInt(document.getElementById('r_callCount').value) || 0;
   const emails = parseInt(document.getElementById('r_emailCount').value) || 0;
-  const otType = document.getElementById('r_type').value;
 
-  const totalVolume = calls + (emails * (2 / 3));
-  document.getElementById('r_total').value = totalVolume.toFixed(2);
+  const isWorkdayChecked = document.getElementById('r_chkWorkday').checked;
+  const isWeekoffChecked = document.getElementById('r_chkWeekoff').checked;
+
+  const workdayDays = parseInt(document.getElementById('r_daysWorkday').value) || 0;
+  const weekoffDays = parseInt(document.getElementById('r_daysWeekoff').value) || 0;
+
+  const dailyVolume = calls + (emails * (2 / 3));
+  document.getElementById('r_total').value = dailyVolume.toFixed(2);
+
+  if (!isWorkdayChecked && !isWeekoffChecked) {
+    document.getElementById('r_payout').innerText = "₹ 0";
+    document.getElementById('r_details').innerText = "Please check at least one OT option (Workday or Week Off).";
+    triggerPayoutAnimation('r_resultBox', 'r_payout', 0);
+    return;
+  }
 
   let totalPayout = 0;
-  let calculationNote = "";
+  let summaryNotes = [];
 
-  if (otType === 'workday') {
-    if (totalVolume <= 45) {
-      totalPayout = 0;
-      calculationNote = `No OT payout: Minimum threshold of 45 transactions not exceeded (Current: ${totalVolume.toFixed(2)}).`;
+  // 1. Regular Workday OT Calculation
+  if (isWorkdayChecked) {
+    if (dailyVolume <= 45) {
+      summaryNotes.push(`Workdays (${workdayDays}d): ₹0 (Daily volume ≤ 45 threshold)`);
     } else {
-      const payableTransactions = totalVolume - 45;
-      totalPayout = payableTransactions * 65;
-      calculationNote = `Regular Workday OT: Paid for ${payableTransactions.toFixed(2)} transactions (above 45 limit) @ ₹65/unit.`;
+      const payablePerDay = dailyVolume - 45;
+      const workdayPayout = payablePerDay * 65 * workdayDays;
+      totalPayout += workdayPayout;
+      summaryNotes.push(`Workdays (${workdayDays}d): ₹${workdayPayout.toFixed(2)} (${payablePerDay.toFixed(2)} extra units/day @ ₹65)`);
     }
-  } else if (otType === 'weekoff') {
-    totalPayout = totalVolume * 65;
-    calculationNote = `6th Day / Week Off OT: Paid for all ${totalVolume.toFixed(2)} transactions @ ₹65/unit.`;
+  }
+
+  // 2. 6th Day / Week Off Calculation
+  if (isWeekoffChecked) {
+    const weekoffPayout = dailyVolume * 65 * weekoffDays;
+    totalPayout += weekoffPayout;
+    summaryNotes.push(`Week Off (${weekoffDays}d): ₹${weekoffPayout.toFixed(2)} (${dailyVolume.toFixed(2)} units/day @ ₹65 from 1st chat)`);
   }
 
   document.getElementById('r_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-  document.getElementById('r_details').innerText = calculationNote;
+  document.getElementById('r_details').innerText = summaryNotes.join(" | ");
+
+  triggerPayoutAnimation('r_resultBox', 'r_payout', totalPayout);
 }
 </script>
 
