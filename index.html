@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OT Calculator Hub</title>
+  <!-- Lottie Animation Player CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-player/2.0.12/lottie-player.js"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -15,6 +20,8 @@
       min-height: 100vh;
       margin: 0;
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
     .calculator-card {
       background-color: #1e293b;
@@ -24,6 +31,8 @@
       max-width: 480px;
       width: 100%;
       box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
+      position: relative;
+      z-index: 2;
     }
     /* Tab Styling */
     .tab-container {
@@ -101,7 +110,7 @@
       font-weight: bold;
     }
     
-    /* Checkbox & Options Card */
+    /* Option Card Styling */
     .option-card {
       background: #0f172a;
       border: 1px solid #334155;
@@ -151,7 +160,7 @@
       background-color: #0f172a;
       text-align: center;
       border: 1px solid #334155;
-      transition: transform 0.3s ease;
+      position: relative;
     }
     .result-title {
       font-size: 0.85em;
@@ -166,6 +175,27 @@
     .result-reason {
       font-size: 0.8em;
       color: #cbd5e1;
+    }
+
+    /* Dynamic Smile Container */
+    .smile-container {
+      height: 80px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    /* Walking Duck Container (Floating at card bottom) */
+    .duck-walk-container {
+      position: absolute;
+      bottom: -20px;
+      left: -120px;
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
     }
 
     /* Pop & Blink Animations */
@@ -185,6 +215,12 @@
     @keyframes blinkEffect {
       0% { color: #38bdf8; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); }
       100% { color: #4ade80; text-shadow: 0 0 15px rgba(74, 222, 128, 0.9); }
+    }
+
+    /* Duck Walking Across Screen Animation */
+    @keyframes duckWalkAcross {
+      0% { left: -100px; opacity: 1; }
+      100% { left: 100%; opacity: 1; }
     }
   </style>
 </head>
@@ -235,6 +271,7 @@
       <div class="result-title">Estimated Bonanza Payout</div>
       <div class="result-amount" id="b_payout">₹ 0</div>
       <div class="result-reason" id="b_details">Enter metrics to calculate.</div>
+      <div class="smile-container" id="b_smileBox"></div>
     </div>
   </div>
 
@@ -288,12 +325,23 @@
       <div class="result-title">Estimated Regular OT Payout</div>
       <div class="result-amount" id="r_payout">₹ 0</div>
       <div class="result-reason" id="r_details">Select shift type & enter days to calculate.</div>
+      <div class="smile-container" id="r_smileBox"></div>
     </div>
+  </div>
+
+  <!-- Walking Duck Container -->
+  <div id="duckContainer" class="duck-walk-container">
+    <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_96bov9ig.json" background="transparent" speed="1.2" loop autoplay></lottie-player>
   </div>
 </div>
 
 <script>
-// Tab Switcher
+// Lottie Animation Sources for Smiles
+const SMILE_LIGHT = "https://assets9.lottiefiles.com/packages/lf20_m64ro19e.json"; // Light Smile
+const SMILE_BIG = "https://assets3.lottiefiles.com/packages/lf20_k239m40m.json";   // Star/Big Smile
+const SMILE_HUGE = "https://assets8.lottiefiles.com/packages/lf20_xl8a598l.json";  // Laughing/Rich Smile
+
+// Switch Tabs
 function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
   const contents = document.querySelectorAll('.tab-content');
@@ -310,14 +358,14 @@ function switchTab(tabName) {
   }
 }
 
-// Toggle Visibility of Days Inputs
+// Toggle Visibility of Days Input
 function toggleDaysInput(containerId) {
   const container = document.getElementById(containerId);
   const checkbox = container.previousElementSibling.querySelector('input[type="checkbox"]');
   container.style.display = checkbox.checked ? 'block' : 'none';
 }
 
-// Auto Update Transactions Volume
+// Auto Calculate Sum
 function updateTotal(prefix) {
   const calls = parseInt(document.getElementById(prefix + '_callCount').value) || 0;
   const emails = parseInt(document.getElementById(prefix + '_emailCount').value) || 0;
@@ -325,26 +373,56 @@ function updateTotal(prefix) {
   document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
 }
 
-// Helper to Trigger Pop & Blink Effect
-function triggerPayoutAnimation(boxId, amountId, totalAmount) {
+// Trigger Walking Duck Animation for 0 Payout
+function triggerDuckWalk() {
+  const duck = document.getElementById('duckContainer');
+  duck.style.display = 'block';
+  duck.style.animation = 'none';
+  void duck.offsetWidth; // Reflow reset
+  duck.style.animation = 'duckWalkAcross 5s linear forwards';
+  
+  setTimeout(() => {
+    duck.style.display = 'none';
+  }, 5000);
+}
+
+// Render Dynamic Smile or Duck Based on Amount
+function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
   const box = document.getElementById(boxId);
   const amountEl = document.getElementById(amountId);
+  const smileBox = document.getElementById(smileBoxId);
 
-  // Reset animations
+  // Clear previous animations
   box.classList.remove('pop-anim');
   amountEl.classList.remove('blink-anim');
+  smileBox.innerHTML = "";
 
   if (totalAmount > 0) {
-    // Trigger pop effect on container
+    // Pop + Blink Effect
     void box.offsetWidth; 
     box.classList.add('pop-anim');
-    
-    // Add glowing blink effect to positive text
     amountEl.classList.add('blink-anim');
+
+    // Choose Smile animation based on payout size
+    let smileUrl = SMILE_LIGHT;
+    if (totalAmount > 20000) {
+      smileUrl = SMILE_HUGE;
+      // Confetti burst for big payouts!
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+      }
+    } else if (totalAmount > 5000) {
+      smileUrl = SMILE_BIG;
+    }
+
+    smileBox.innerHTML = `<lottie-player src="${smileUrl}" background="transparent" speed="1" style="width: 70px; height: 70px;" loop autoplay></lottie-player>`;
+  } else {
+    // Trigger duck walking animation on zero payout
+    triggerDuckWalk();
   }
 }
 
-// OT Bonanza Logic
+// OT Bonanza Calculation Logic
 function calculateBonanza() {
   const calls = parseInt(document.getElementById('b_callCount').value) || 0;
   const emails = parseInt(document.getElementById('b_emailCount').value) || 0;
@@ -367,7 +445,7 @@ function calculateBonanza() {
   if (totalVolume < 1270) {
     document.getElementById('b_payout').innerText = "₹ 0";
     document.getElementById('b_details').innerText = `₹0 Payout: Minimum 1270 transactions required for Bonanza tier.`;
-    triggerPayoutAnimation('b_resultBox', 'b_payout', 0);
+    handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', 0);
     return;
   }
 
@@ -394,10 +472,10 @@ function calculateBonanza() {
   document.getElementById('b_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
   document.getElementById('b_details').innerText = calculationNote;
 
-  triggerPayoutAnimation('b_resultBox', 'b_payout', totalPayout);
+  handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', totalPayout);
 }
 
-// Regular OT Logic
+// Regular OT Calculation Logic
 function calculateRegular() {
   const calls = parseInt(document.getElementById('r_callCount').value) || 0;
   const emails = parseInt(document.getElementById('r_emailCount').value) || 0;
@@ -414,14 +492,14 @@ function calculateRegular() {
   if (!isWorkdayChecked && !isWeekoffChecked) {
     document.getElementById('r_payout').innerText = "₹ 0";
     document.getElementById('r_details').innerText = "Please check at least one OT option (Workday or Week Off).";
-    triggerPayoutAnimation('r_resultBox', 'r_payout', 0);
+    handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', 0);
     return;
   }
 
   let totalPayout = 0;
   let summaryNotes = [];
 
-  // 1. Regular Workday OT Calculation
+  // Workday Calculation
   if (isWorkdayChecked) {
     if (dailyVolume <= 45) {
       summaryNotes.push(`Workdays (${workdayDays}d): ₹0 (Daily volume ≤ 45 threshold)`);
@@ -433,7 +511,7 @@ function calculateRegular() {
     }
   }
 
-  // 2. 6th Day / Week Off Calculation
+  // Week Off Calculation
   if (isWeekoffChecked) {
     const weekoffPayout = dailyVolume * 65 * weekoffDays;
     totalPayout += weekoffPayout;
@@ -443,7 +521,7 @@ function calculateRegular() {
   document.getElementById('r_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
   document.getElementById('r_details').innerText = summaryNotes.join(" | ");
 
-  triggerPayoutAnimation('r_resultBox', 'r_payout', totalPayout);
+  handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', totalPayout);
 }
 </script>
 
