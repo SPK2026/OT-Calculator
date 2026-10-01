@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sept OT Bonanza Calculator</title>
+  <title>OT Calculator Hub</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
+      background-color: #0b192c;
       color: #ffffff;
       display: flex;
       justify-content: center;
@@ -17,54 +17,87 @@
       padding: 20px;
     }
     .calculator-card {
-      background-color: #1e1e1e;
-      border: 2px solid #ffcc00;
+      background-color: #1e293b;
+      border: 2px solid #38bdf8;
       border-radius: 12px;
-      padding: 30px;
-      max-width: 450px;
+      padding: 25px;
+      max-width: 460px;
       width: 100%;
-      box-shadow: 0 8px 24px rgba(255, 204, 0, 0.2);
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
     }
+    /* Tab Styling */
+    .tab-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background-color: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
     h2 {
       text-align: center;
-      color: #ffcc00;
+      color: #38bdf8;
       margin-top: 0;
       text-transform: uppercase;
       letter-spacing: 1px;
+      font-size: 1.3rem;
     }
     .subtitle {
       text-align: center;
-      color: #cccccc;
-      font-size: 0.9em;
-      margin-bottom: 25px;
+      color: #cbd5e1;
+      font-size: 0.85em;
+      margin-bottom: 20px;
+      font-weight: bold;
     }
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 15px;
     }
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
-      color: #e0e0e0;
+      color: #e2e8f0;
+      font-size: 0.9rem;
     }
-    input[type="number"] {
+    input[type="number"], select {
       width: 100%;
       padding: 10px;
       border-radius: 6px;
-      border: 1px solid #444;
-      background-color: #2a2a2a;
+      border: 1px solid #475569;
+      background-color: #0f172a;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       box-sizing: border-box;
     }
-    input[type="number"]:focus {
-      border-color: #ffcc00;
+    input[type="number"]:focus, select:focus {
+      border-color: #38bdf8;
       outline: none;
     }
     input[readonly] {
-      background-color: #1a233a;
-      border-color: #ffcc00;
-      color: #ffcc00;
+      background-color: #1e293b;
+      border-color: #38bdf8;
+      color: #38bdf8;
       font-weight: bold;
     }
     .checkbox-group {
@@ -76,152 +109,242 @@
     .checkbox-group input {
       width: 18px;
       height: 18px;
-      accent-color: #ffcc00;
+      accent-color: #38bdf8;
     }
-    button {
+    .calc-btn {
       width: 100%;
       padding: 12px;
-      background-color: #ffcc00;
-      color: #000;
+      background-color: #38bdf8;
+      color: #0f172a;
       border: none;
       border-radius: 6px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
       margin-top: 15px;
       transition: background 0.2s;
     }
-    button:hover {
-      background-color: #e6b800;
+    .calc-btn:hover {
+      background-color: #0284c7;
+      color: #ffffff;
     }
     .result-box {
-      margin-top: 25px;
+      margin-top: 20px;
       padding: 15px;
       border-radius: 8px;
-      background-color: #2a2a2a;
+      background-color: #0f172a;
       text-align: center;
+      border: 1px solid #334155;
     }
     .result-title {
-      font-size: 0.9em;
-      color: #aaa;
+      font-size: 0.85em;
+      color: #94a3b8;
     }
     .result-amount {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: bold;
-      color: #ffcc00;
-      margin: 8px 0;
+      color: #38bdf8;
+      margin: 6px 0;
     }
     .result-reason {
-      font-size: 0.85em;
-      color: #d1d1d1;
+      font-size: 0.8em;
+      color: #cbd5e1;
     }
   </style>
 </head>
 <body>
 
 <div class="calculator-card">
-  <h2>OT Bonanza Calculator</h2>
-  <div class="subtitle">Only for chat and voice team</div>
-
-  <div class="form-group">
-    <label for="callCount">MTD Call/Chat Count:</label>
-    <input type="number" id="callCount" placeholder="Enter total chats/calls (e.g., 1000)" min="0" oninput="updateTotalTransactions()">
+  <!-- Tab Navigation -->
+  <div class="tab-container">
+    <div class="tab-btn active" onclick="switchTab('bonanza')">OT Bonanza</div>
+    <div class="tab-btn" onclick="switchTab('regular')">Regular OT</div>
   </div>
 
-  <div class="form-group">
-    <label for="emailCount">MTD Email Count (3 Emails = 2 transactions):</label>
-    <input type="number" id="emailCount" placeholder="Enter total emails (e.g., 300)" min="0" oninput="updateTotalTransactions()">
+  <!-- OT BONANZA SECTION -->
+  <div id="bonanzaTab" class="tab-content active">
+    <h2>October OT Bonanza</h2>
+    <div class="subtitle">STAY ACCURATE, BOOST CSAT, EARN BIG!</div>
+
+    <div class="form-group">
+      <label for="b_callCount">MTD Call/Chat Count:</label>
+      <input type="number" id="b_callCount" placeholder="Enter chats/calls" min="0" oninput="updateTotal('b')">
+    </div>
+
+    <div class="form-group">
+      <label for="b_emailCount">MTD Email Count (3 Emails = 2 Chats):</label>
+      <input type="number" id="b_emailCount" placeholder="Enter emails" min="0" oninput="updateTotal('b')">
+    </div>
+
+    <div class="form-group">
+      <label for="b_total">Total Equivalent Transactions (Auto):</label>
+      <input type="number" id="b_total" placeholder="0" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="b_csat">CSAT Percentage (%):</label>
+      <input type="number" id="b_csat" placeholder="Min. CSAT required: 62%" min="0" max="100">
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="b_unsavedError">
+      <label for="b_unsavedError">More than 1 unsaved error</label>
+    </div>
+
+    <button class="calc-btn" onclick="calculateBonanza()">Calculate Bonanza Earnings</button>
+
+    <div class="result-box">
+      <div class="result-title">Estimated Bonanza Payout</div>
+      <div class="result-amount" id="b_payout">₹ 0</div>
+      <div class="result-reason" id="b_details">Enter metrics to calculate.</div>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label for="totalTransactions">Total Equivalent Transactions (Auto):</label>
-    <input type="number" id="totalTransactions" placeholder="0" readonly>
-  </div>
+  <!-- REGULAR OT SECTION -->
+  <div id="regularTab" class="tab-content">
+    <h2>Regular Overtime</h2>
+    <div class="subtitle">STANDARD OT CALCULATOR</div>
 
-  <div class="form-group">
-    <label for="csat">CSAT Percentage (%):</label>
-    <input type="number" id="csat" placeholder="Enter CSAT (e.g., 62)" min="0" max="100">
-  </div>
+    <div class="form-group">
+      <label for="r_type">Select OT Shift Type:</label>
+      <select id="r_type">
+        <option value="workday">Regular Workday OT (45 Threshold)</option>
+        <option value="weekoff">6th Day Working / Week Off (From 1st Chat)</option>
+      </select>
+    </div>
 
-  <div class="form-group checkbox-group">
-    <input type="checkbox" id="unsavedError">
-    <label for="unsavedError">More than 1 unsaved / TG error</label>
-  </div>
+    <div class="form-group">
+      <label for="r_callCount">Call/Chat Count:</label>
+      <input type="number" id="r_callCount" placeholder="Enter chats/calls" min="0" oninput="updateTotal('r')">
+    </div>
 
-  <button onclick="calculatePayout()">Calculate Earnings</button>
+    <div class="form-group">
+      <label for="r_emailCount">Email Count (3 Emails = 2 Chats):</label>
+      <input type="number" id="r_emailCount" placeholder="Enter emails" min="0" oninput="updateTotal('r')">
+    </div>
 
-  <div class="result-box" id="resultBox">
-    <div class="result-title">Estimated Bonus Payout</div>
-    <div class="result-amount" id="payoutAmount">₹ 0</div>
-    <div class="result-reason" id="payoutDetails">Enter your metrics to calculate.</div>
+    <div class="form-group">
+      <label for="r_total">Total Equivalent Transactions (Auto):</label>
+      <input type="number" id="r_total" placeholder="0" readonly>
+    </div>
+
+    <button class="calc-btn" onclick="calculateRegular()">Calculate Regular OT</button>
+
+    <div class="result-box">
+      <div class="result-title">Estimated Regular OT Payout</div>
+      <div class="result-amount" id="r_payout">₹ 0</div>
+      <div class="result-reason" id="r_details">Enter transactions to calculate.</div>
+    </div>
   </div>
 </div>
 
 <script>
-function updateTotalTransactions() {
-  const calls = parseInt(document.getElementById('callCount').value) || 0;
-  const emails = parseInt(document.getElementById('emailCount').value) || 0;
-  
-  // 3 Emails = 2 Calls/Chats
-  const totalVolume = calls + (emails * (2 / 3));
-  document.getElementById('totalTransactions').value = totalVolume.toFixed(2);
+// Switch between Tabs
+function switchTab(tabName) {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const contents = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(tab => tab.classList.remove('active'));
+  contents.forEach(content => content.classList.remove('active'));
+
+  if (tabName === 'bonanza') {
+    tabs[0].classList.add('active');
+    document.getElementById('bonanzaTab').classList.add('active');
+  } else {
+    tabs[1].classList.add('active');
+    document.getElementById('regularTab').classList.add('active');
+  }
 }
 
-function calculatePayout() {
-  const calls = parseInt(document.getElementById('callCount').value) || 0;
-  const emails = parseInt(document.getElementById('emailCount').value) || 0;
-  const csat = parseFloat(document.getElementById('csat').value) || 0;
-  const hasUnsavedError = document.getElementById('unsavedError').checked;
-
-  // Automated total transaction sum
+// Auto Update Equivalent Sum
+function updateTotal(prefix) {
+  const calls = parseInt(document.getElementById(prefix + '_callCount').value) || 0;
+  const emails = parseInt(document.getElementById(prefix + '_emailCount').value) || 0;
+  
   const totalVolume = calls + (emails * (2 / 3));
-  document.getElementById('totalTransactions').value = totalVolume.toFixed(2);
+  document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
+}
 
-  const rateTier1 = 18000 / 1220; // ~14.754
-  const rateTier2 = 28000 / 1270; // ~22.047
-  const rateTier3 = 38000 / 1340; // ~28.358
-  const fallbackRate = 12.21;
+// OT Bonanza Calculation (October Scheme)
+function calculateBonanza() {
+  const calls = parseInt(document.getElementById('b_callCount').value) || 0;
+  const emails = parseInt(document.getElementById('b_emailCount').value) || 0;
+  const csat = parseFloat(document.getElementById('b_csat').value) || 0;
+  const hasUnsavedError = document.getElementById('b_unsavedError').checked;
+
+  const totalVolume = calls + (emails * (2 / 3));
+  document.getElementById('b_total').value = totalVolume.toFixed(2);
+
+  const rateTier1 = 22400 / 1270; // ~17.638
+  const rateTier2 = 35000 / 1340; // ~26.119
+  const rateTier3 = 45000 / 1390; // ~32.374
 
   let appliedRate = 0;
   let totalPayout = 0;
   let calculationNote = "";
 
-  // Floor rule: Below 990 total equivalent transactions means zero payout
-  if (totalVolume < 990) {
-    document.getElementById('payoutAmount').innerText = "₹ 0";
-    document.getElementById('payoutDetails').innerText = `No payout: Total equivalent transactions (${totalVolume.toFixed(2)}) are below the minimum limit of 990.`;
+  const meetsRiderConditions = (csat >= 62) && (!hasUnsavedError);
+
+  // Strict Threshold: 0 payout until meeting 1270 transactions
+  if (totalVolume < 1270) {
+    document.getElementById('b_payout').innerText = "₹ 0";
+    document.getElementById('b_details').innerText = `₹0 Payout: Minimum 1270 transactions required to qualify for OT Bonanza (Current: ${totalVolume.toFixed(2)}).`;
     return;
   }
 
-  const meetsRiderConditions = (csat >= 61) && (!hasUnsavedError);
-
   if (meetsRiderConditions) {
-    if (totalVolume >= 1340) {
+    if (totalVolume >= 1390) {
       appliedRate = rateTier3;
       calculationNote = `Tier 3 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
-    } else if (totalVolume >= 1270) {
+    } else if (totalVolume >= 1340) {
       appliedRate = rateTier2;
       calculationNote = `Tier 2 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
-    } else if (totalVolume >= 1220) {
+    } else {
       appliedRate = rateTier1;
       calculationNote = `Tier 1 rate applied (₹${appliedRate.toFixed(3)}/unit for ${totalVolume.toFixed(2)} transactions).`;
-    } else {
-      appliedRate = fallbackRate;
-      calculationNote = `Between 990 and 1219 transactions. Fallback rate applied (₹12.21/unit for ${totalVolume.toFixed(2)} transactions).`;
     }
+    totalPayout = totalVolume * appliedRate;
   } else {
-    appliedRate = fallbackRate;
+    totalPayout = 0;
     let reasonText = [];
-    if (csat < 61) reasonText.push("CSAT is below 61%");
+    if (csat < 62) reasonText.push("CSAT is below 62%");
     if (hasUnsavedError) reasonText.push("More than 1 unsaved error");
     
-    calculationNote = `Fallback rate applied (₹12.21/unit for ${totalVolume.toFixed(2)} transactions) due to: ${reasonText.join(" and ")}.`;
+    calculationNote = `₹0 Payout: Criteria missed due to ${reasonText.join(" and ")}.`;
   }
 
-  totalPayout = totalVolume * appliedRate;
+  document.getElementById('b_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  document.getElementById('b_details').innerText = calculationNote;
+}
 
-  document.getElementById('payoutAmount').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-  document.getElementById('payoutDetails').innerText = calculationNote;
+// Regular OT Calculation
+function calculateRegular() {
+  const calls = parseInt(document.getElementById('r_callCount').value) || 0;
+  const emails = parseInt(document.getElementById('r_emailCount').value) || 0;
+  const otType = document.getElementById('r_type').value;
+
+  const totalVolume = calls + (emails * (2 / 3));
+  document.getElementById('r_total').value = totalVolume.toFixed(2);
+
+  let totalPayout = 0;
+  let calculationNote = "";
+
+  if (otType === 'workday') {
+    if (totalVolume <= 45) {
+      totalPayout = 0;
+      calculationNote = `No OT payout: Minimum threshold of 45 transactions not exceeded (Current: ${totalVolume.toFixed(2)}).`;
+    } else {
+      const payableTransactions = totalVolume - 45;
+      totalPayout = payableTransactions * 65;
+      calculationNote = `Regular Workday OT: Paid for ${payableTransactions.toFixed(2)} transactions (above 45 limit) @ ₹65/unit.`;
+    }
+  } else if (otType === 'weekoff') {
+    totalPayout = totalVolume * 65;
+    calculationNote = `6th Day / Week Off OT: Paid for all ${totalVolume.toFixed(2)} transactions @ ₹65/unit.`;
+  }
+
+  document.getElementById('r_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  document.getElementById('r_details').innerText = calculationNote;
 }
 </script>
 
