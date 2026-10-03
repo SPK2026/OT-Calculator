@@ -36,41 +36,55 @@
         transform: translateY(0px) rotate(0deg) scale(1);
       }
       50% {
-        transform: translateY(-25px) rotate(10deg) scale(1.05);
+        transform: translateY(-20px) rotate(8deg) scale(1.04);
       }
       100% {
-        transform: translateY(-50px) rotate(-10deg) scale(1.1);
+        transform: translateY(-40px) rotate(-8deg) scale(1.08);
       }
     }
 
-    /* Duck Flying Animation - Non-interfering Overlay */
-    @keyframes flyAcross {
+    /* Slow Duck Walking & Hopping Across Screen */
+    @keyframes slowWalkAcross {
       0% {
-        transform: translate(-120vw, -30vh) scale(0.6) rotate(-10deg);
+        transform: translate(-100px, -20px) scale(0.75);
         opacity: 0;
       }
-      15% {
-        opacity: 0.65;
+      10% {
+        opacity: 0.85;
       }
       85% {
-        opacity: 0.65;
+        opacity: 0.85;
       }
       100% {
-        transform: translate(120vw, 40vh) scale(1.1) rotate(10deg);
+        transform: translate(calc(100vw + 100px), 18vh) scale(1.05);
         opacity: 0;
       }
     }
 
-    @keyframes duckWaddle {
-      0%, 100% { transform: rotate(-6deg) translateY(0); }
-      50% { transform: rotate(6deg) translateY(-10px); }
+    /* Up-and-Down Hopping & Waddling Stepping Motion */
+    @keyframes duckWaddleHop {
+      0% {
+        transform: translateY(0px) rotate(-10deg);
+      }
+      25% {
+        transform: translateY(-16px) rotate(0deg) scaleY(1.05);
+      }
+      50% {
+        transform: translateY(2px) rotate(10deg);
+      }
+      75% {
+        transform: translateY(-16px) rotate(0deg) scaleY(1.05);
+      }
+      100% {
+        transform: translateY(0px) rotate(-10deg);
+      }
     }
 
     .duck-fly-overlay {
       position: fixed;
-      top: 20%;
+      top: 15%;
       left: 0;
-      z-index: 40;
+      z-index: 50;
       pointer-events: none; /* Never blocks input clicks */
       display: flex;
       flex-direction: column;
@@ -79,15 +93,15 @@
     }
 
     .duck-fly-active {
-      animation: flyAcross 6s ease-in-out infinite;
+      animation: slowWalkAcross 11s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
     .duck-body {
-      animation: duckWaddle 0.5s ease-in-out infinite;
-      filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+      animation: duckWaddleHop 0.9s ease-in-out infinite;
+      filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.4));
     }
 
-    /* Dynamic Smile Animations */
+    /* Dynamic Result Animations */
     .smile-bounce {
       display: inline-block;
       animation: bounce 0.8s infinite alternate ease-in-out;
@@ -127,183 +141,190 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex items-center justify-center p-3 sm:p-6 select-none relative">
+<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex items-center justify-center p-3 sm:p-5 select-none relative">
 
-  <!-- Transparent Rupee Background Pattern -->
   <div id="rupeeBgContainer" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-    <div class="rupee-bg text-6xl sm:text-8xl" style="top: 8%; left: 5%; animation-duration: 8s;">₹</div>
-    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 15%; right: 8%; animation-duration: 10s; animation-delay: -2s;">₹</div>
-    <div class="rupee-bg text-8xl sm:text-[11rem]" style="bottom: 10%; left: 8%; animation-duration: 9s; animation-delay: -4s;">₹</div>
-    <div class="rupee-bg text-6xl sm:text-8xl" style="bottom: 12%; right: 12%; animation-duration: 11s; animation-delay: -1s;">₹</div>
-    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 45%; left: 3%; animation-duration: 7s; animation-delay: -3s;">₹</div>
-    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 48%; right: 4%; animation-duration: 12s; animation-delay: -5s;">₹</div>
-    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 2%; left: 45%; animation-duration: 9s; animation-delay: -2s;">₹</div>
-    <div class="rupee-bg text-8xl sm:text-[10rem]" style="bottom: 2%; left: 42%; animation-duration: 10s; animation-delay: -6s;">₹</div>
+    <div class="rupee-bg text-6xl sm:text-8xl" style="top: 6%; left: 4%; animation-duration: 8s;">₹</div>
+    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 12%; right: 6%; animation-duration: 10s; animation-delay: -2s;">₹</div>
+    <div class="rupee-bg text-8xl sm:text-[11rem]" style="bottom: 8%; left: 6%; animation-duration: 9s; animation-delay: -4s;">₹</div>
+    <div class="rupee-bg text-6xl sm:text-8xl" style="bottom: 10%; right: 10%; animation-duration: 11s; animation-delay: -1s;">₹</div>
+    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 42%; left: 2%; animation-duration: 7s; animation-delay: -3s;">₹</div>
+    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 45%; right: 3%; animation-duration: 12s; animation-delay: -5s;">₹</div>
+    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 2%; left: 42%; animation-duration: 9s; animation-delay: -2s;">₹</div>
+    <div class="rupee-bg text-8xl sm:text-[10rem]" style="bottom: 2%; left: 40%; animation-duration: 10s; animation-delay: -6s;">₹</div>
   </div>
 
-  <!-- Transparent Flying Duck Overlay (Only appears on ₹0 Payout) -->
   <div id="zeroDuckContainer" class="duck-fly-overlay hidden">
-    <div class="relative flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+    <div class="relative flex flex-col items-center opacity-80 hover:opacity-100 transition-opacity">
       <!-- Speech bubble -->
-      <div class="bg-amber-400/90 text-slate-950 text-xs sm:text-sm font-black px-3 py-1.5 rounded-2xl rounded-bl-none shadow-lg mb-1 whitespace-nowrap border border-amber-300">
+      <div class="bg-amber-400 text-slate-950 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-2xl rounded-bl-none shadow-xl mb-1 whitespace-nowrap border-2 border-amber-300">
         ₹0 Overtime? Quack! 🦆
       </div>
-      <!-- Transparent Semi-transparent Duck SVG -->
-      <svg class="duck-body w-24 h-24 sm:w-32 sm:h-32 opacity-75" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15" fill-opacity="0.85"/>
-        <path d="M 20 58 Q 10 50 14 42 Q 24 50 26 56 Z" fill="#EAB308" fill-opacity="0.85"/>
-        <path d="M 40 55 C 32 55 28 68 42 72 C 55 75 58 60 40 55 Z" fill="#CA8A04" fill-opacity="0.85"/>
-        <circle cx="70" cy="36" r="18" fill="#FACC15" fill-opacity="0.85"/>
-        <path d="M 82 34 Q 98 36 86 44 Z" fill="#F97316" fill-opacity="0.85"/>
+      <!-- Waddling & Hopping Duck Vector SVG -->
+      <svg class="duck-body w-28 h-28 sm:w-36 sm:h-36 opacity-85" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body -->
+        <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15"/>
+        <!-- Tail Feather -->
+        <path d="M 20 58 Q 10 50 14 42 Q 24 50 26 56 Z" fill="#EAB308"/>
+        <!-- Wing -->
+        <path d="M 40 55 C 32 55 28 68 42 72 C 55 75 58 60 40 55 Z" fill="#CA8A04"/>
+        <!-- Head -->
+        <circle cx="70" cy="36" r="18" fill="#FACC15"/>
+        <!-- Beak -->
+        <path d="M 82 34 Q 98 36 86 44 Z" fill="#F97316"/>
+        <!-- Eye -->
         <circle cx="74" cy="32" r="3.5" fill="#0F172A"/>
         <circle cx="75.5" cy="30.5" r="1.2" fill="#FFFFFF"/>
-        <circle cx="72" cy="40" r="4" fill="#F43F5E" opacity="0.5"/>
+        <!-- Cheek blush -->
+        <circle cx="72" cy="40" r="4" fill="#F43F5E" opacity="0.6"/>
+        <!-- Left Foot -->
         <path d="M 45 80 L 42 90 M 42 90 L 36 92 M 42 90 L 48 92" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+        <!-- Right Foot -->
         <path d="M 58 80 L 62 90 M 62 90 L 56 92 M 62 90 L 68 92" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
       </svg>
     </div>
   </div>
 
-  <div class="relative z-10 bg-slate-900/95 backdrop-blur-md border-2 border-sky-400/80 rounded-2xl p-4 sm:p-6 w-full max-w-2xl md:max-w-3xl flex flex-col justify-between shadow-[0_0_50px_rgba(56,189,248,0.25)]">
+  <div class="relative z-10 bg-slate-900/95 backdrop-blur-md border-2 border-sky-400/80 rounded-2xl p-4 sm:p-5 w-full max-w-2xl md:max-w-3xl flex flex-col justify-between shadow-[0_0_50px_rgba(56,189,248,0.25)]">
     
     <!-- Tab Controls -->
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      <button id="btnTabBonanza" onclick="switchTab('bonanza')" class="py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30">
+    <div class="grid grid-cols-2 gap-2.5 mb-3">
+      <button id="btnTabBonanza" onclick="switchTab('bonanza')" class="py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30">
         OT Bonanza
       </button>
-      <button id="btnTabRegular" onclick="switchTab('regular')" class="py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200">
+      <button id="btnTabRegular" onclick="switchTab('regular')" class="py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200">
         Regular OT
       </button>
     </div>
 
     <!-- TAB 1: OT BONANZA -->
-    <div id="tabBonanza" class="flex flex-col space-y-3.5">
+    <div id="tabBonanza" class="flex flex-col space-y-3">
       <div class="text-center">
-        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl tracking-wider uppercase">October OT Bonanza</h1>
-        <p class="text-slate-300 text-xs sm:text-sm font-semibold mt-0.5">STAY ACCURATE, BOOST CSAT, EARN BIG!</p>
+        <h1 class="text-sky-400 font-extrabold text-base sm:text-2xl tracking-wider uppercase">October OT Bonanza</h1>
+        <p class="text-slate-300 text-[11px] sm:text-xs font-semibold mt-0.5">STAY ACCURATE, BOOST CSAT, EARN BIG!</p>
       </div>
 
       <!-- Input Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Calls / Chats</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">MTD Calls / Chats</label>
           <input type="number" id="b_callCount" placeholder="0" min="0" oninput="updateTotal('b')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none transition">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Emails (3 emails = 2 chats)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">MTD Emails (3 emails = 2 chats)</label>
           <input type="number" id="b_emailCount" placeholder="0" min="0" oninput="updateTotal('b')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none transition">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Total Equivalent (Auto)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Total Equivalent (Auto)</label>
           <input type="number" id="b_total" placeholder="0.00" readonly
-            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm text-sky-400 font-bold outline-none">
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-xs sm:text-sm text-sky-400 font-bold outline-none">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">CSAT Percentage (%)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">CSAT Percentage (%)</label>
           <input type="number" id="b_csat" placeholder="Min required: 62%" min="0" max="100"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none transition">
         </div>
       </div>
 
       <!-- Unsaved Error Checkbox -->
-      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 flex items-center gap-3">
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2 flex items-center gap-3">
         <input type="checkbox" id="b_unsavedError" class="w-4 h-4 accent-sky-400 cursor-pointer">
-        <label for="b_unsavedError" class="text-xs sm:text-sm font-medium text-slate-200 cursor-pointer">
+        <label for="b_unsavedError" class="text-xs font-medium text-slate-200 cursor-pointer">
           More than 1 unsaved error
         </label>
       </div>
 
       <!-- Calculate Button -->
-      <button onclick="calculateBonanza()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-base py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+      <button onclick="calculateBonanza()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
         Calculate Bonanza
       </button>
 
       <!-- Result Card -->
-      <div id="b_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center relative flex flex-col justify-center min-h-[90px]">
-        <span class="text-slate-400 text-xs font-medium">ESTIMATED BONANZA PAYOUT</span>
-        <div id="b_payout" class="text-2xl sm:text-4xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
+      <div id="b_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-center relative flex flex-col justify-center min-h-[85px]">
+        <span class="text-slate-400 text-[11px] font-medium uppercase tracking-wider">Estimated Bonanza Payout</span>
+        <div id="b_payout" class="text-2xl sm:text-3xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
         <p id="b_details" class="text-slate-300 text-xs">Enter metrics to calculate.</p>
-        <div id="b_smileBox" class="absolute top-2 right-3 text-2xl sm:text-3xl"></div>
+        <div id="b_smileBox" class="absolute top-2 right-3 text-xl sm:text-2xl"></div>
       </div>
     </div>
 
     <!-- TAB 2: REGULAR OT -->
-    <div id="tabRegular" class="hidden flex-col space-y-3.5">
+    <div id="tabRegular" class="hidden flex-col space-y-3">
       <div class="text-center">
-        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl tracking-wider uppercase">Regular Overtime</h1>
-        <p class="text-slate-300 text-xs sm:text-sm font-semibold mt-0.5">SELECT SHIFT TYPES & ENTER DAYS</p>
+        <h1 class="text-sky-400 font-extrabold text-base sm:text-2xl tracking-wider uppercase">Regular Overtime</h1>
+        <p class="text-slate-300 text-[11px] sm:text-xs font-semibold mt-0.5">SELECT SHIFT TYPES & ENTER DAYS</p>
       </div>
 
       <!-- Daily Averages -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Calls / Chats</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Daily Avg Calls / Chats</label>
           <input type="number" id="r_callCount" placeholder="0" min="0" oninput="updateTotal('r')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none transition">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Emails (3e = 2c)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Daily Avg Emails (3e = 2c)</label>
           <input type="number" id="r_emailCount" placeholder="0" min="0" oninput="updateTotal('r')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none transition">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Equivalent (Auto)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Daily Equivalent (Auto)</label>
           <input type="number" id="r_total" placeholder="0.00" readonly
-            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm text-sky-400 font-bold outline-none">
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-xs sm:text-sm text-sky-400 font-bold outline-none">
         </div>
       </div>
 
       <!-- Shift Options Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <!-- Regular Workday Option -->
-        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
-          <div class="flex items-center gap-2.5">
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 flex flex-col justify-between">
+          <div class="flex items-center gap-2">
             <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')" class="w-4 h-4 accent-sky-400 cursor-pointer">
-            <label for="r_chkWorkday" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-              Regular Workday OT <span class="text-sky-400 text-xs block font-normal">(Threshold: 45 chats)</span>
+            <label for="r_chkWorkday" class="text-xs font-semibold text-slate-200 cursor-pointer">
+              Regular Workday OT <span class="text-sky-400 text-[10px] block font-normal">(Threshold: 45 chats)</span>
             </label>
           </div>
-          <div id="r_daysWorkdayContainer" class="hidden mt-2">
-            <label class="block text-xs text-slate-400 mb-1">Number of Workdays:</label>
+          <div id="r_daysWorkdayContainer" class="hidden mt-1.5">
+            <label class="block text-[11px] text-slate-400 mb-1">Number of Workdays:</label>
             <input type="number" id="r_daysWorkday" value="1" min="1"
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none">
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none">
           </div>
         </div>
 
         <!-- Week Off Option -->
-        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
-          <div class="flex items-center gap-2.5">
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 flex flex-col justify-between">
+          <div class="flex items-center gap-2">
             <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')" class="w-4 h-4 accent-sky-400 cursor-pointer">
-            <label for="r_chkWeekoff" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
-              6th Day / Week Off <span class="text-sky-400 text-xs block font-normal">(Paid from 1st chat)</span>
+            <label for="r_chkWeekoff" class="text-xs font-semibold text-slate-200 cursor-pointer">
+              6th Day / Week Off <span class="text-sky-400 text-[10px] block font-normal">(Paid from 1st chat)</span>
             </label>
           </div>
-          <div id="r_daysWeekoffContainer" class="hidden mt-2">
-            <label class="block text-xs text-slate-400 mb-1">Number of Week Off Days:</label>
+          <div id="r_daysWeekoffContainer" class="hidden mt-1.5">
+            <label class="block text-[11px] text-slate-400 mb-1">Number of Week Off Days:</label>
             <input type="number" id="r_daysWeekoff" value="1" min="1"
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none">
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none">
           </div>
         </div>
       </div>
 
       <!-- Calculate Button -->
-      <button onclick="calculateRegular()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-base py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+      <button onclick="calculateRegular()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
         Calculate Regular OT
       </button>
 
       <!-- Result Card -->
-      <div id="r_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center relative flex flex-col justify-center min-h-[90px]">
-        <span class="text-slate-400 text-xs font-medium">ESTIMATED REGULAR OT PAYOUT</span>
-        <div id="r_payout" class="text-2xl sm:text-4xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
+      <div id="r_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-center relative flex flex-col justify-center min-h-[85px]">
+        <span class="text-slate-400 text-[11px] font-medium uppercase tracking-wider">Estimated Regular OT Payout</span>
+        <div id="r_payout" class="text-2xl sm:text-3xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
         <p id="r_details" class="text-slate-300 text-xs">Select shift type & enter days to calculate.</p>
-        <div id="r_smileBox" class="absolute top-2 right-3 text-2xl sm:text-3xl"></div>
+        <div id="r_smileBox" class="absolute top-2 right-3 text-xl sm:text-2xl"></div>
       </div>
     </div>
 
@@ -318,15 +339,15 @@
       const rTab = document.getElementById('tabRegular');
 
       if (tabName === 'bonanza') {
-        bBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
-        rBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        bBtn.className = "py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        rBtn.className = "py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
         bTab.classList.remove('hidden');
         bTab.classList.add('flex');
         rTab.classList.add('hidden');
         rTab.classList.remove('flex');
       } else {
-        rBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
-        bBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        rBtn.className = "py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        bBtn.className = "py-2.5 px-4 rounded-xl font-extrabold text-xs sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
         rTab.classList.remove('hidden');
         rTab.classList.add('flex');
         bTab.classList.add('hidden');
@@ -382,9 +403,8 @@
         }
         smileBox.innerHTML = smileHTML;
       } else {
-        // Trigger flying transparent duck overlay when payout is zero
+        // Trigger slow waddling/hopping duck overlay when payout is zero
         duckContainer.classList.remove('hidden');
-        // Restart animation
         duckContainer.classList.remove('duck-fly-active');
         void duckContainer.offsetWidth;
         duckContainer.classList.add('duck-fly-active');
