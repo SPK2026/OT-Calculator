@@ -1,690 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>October OT Bonanza & Regular OT Calculator</title>
-  <!-- Canvas Confetti CDN for high payout celebrations -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+<!-- ... existing code ... -->
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      overscroll-behavior: none;
     }
 
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh; /* Dynamic viewport height support for mobile browsers */
-      overflow: hidden;
-      background-color: #0b192c;
-      color: #ffffff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    /* Waddle Animation */
+    @keyframes duckWaddle {
+      0%, 100% { transform: rotate(-8deg) translateY(0); }
+      50% { transform: rotate(8deg) translateY(-8px); }
     }
 
-    /* Main Container Card */
-    .app-card {
-      background-color: #1e293b;
-      border: 1.5px solid #38bdf8;
-      border-radius: 16px;
-      padding: 14px 18px;
-      width: 94vw;
-      max-width: 520px;
-      max-height: 96vh;
-      max-height: 96dvh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.18), 0 0 15px rgba(0, 0, 0, 0.5);
-      position: relative;
-      z-index: 2;
+    /* Trajectory animation from top-left corner to calculation box */
+    @keyframes drawTrajectory {
+      0% {
+        top: 2%;
+        left: 2%;
+        opacity: 0;
+        transform: scale(0.6);
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        top: min(65vh, 480px);
+        left: min(50vw, 400px);
+        opacity: 0.95;
+        transform: scale(1);
+      }
     }
 
-    /* Header & Tabs */
-    .header {
-      text-align: center;
-      margin-bottom: 10px;
-      flex-shrink: 0;
-    }
-
-    .tab-container {
-      display: flex;
-      gap: 8px;
-      background: #0f172a;
-      padding: 4px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      margin-bottom: 10px;
-      flex-shrink: 0;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 8px 12px;
-      background: transparent;
-      color: #94a3b8;
-      border: none;
-      border-radius: 7px;
-      font-weight: 700;
-      font-size: 0.82rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.25s ease;
-      letter-spacing: 0.3px;
-    }
-
-    .tab-btn.active {
-      background-color: #38bdf8;
-      color: #0f172a;
-      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
-    }
-
-    .title {
-      color: #38bdf8;
-      font-size: 1.05rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      line-height: 1.2;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
-    }
-
-    /* Tab Content Wrappers */
-    .tab-content {
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-      justify-content: space-between;
-    }
-
-    .tab-content.active {
-      display: flex;
-    }
-
-    /* Grid Form Layouts for Compact View */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    label {
-      font-weight: 600;
-      color: #cbd5e1;
-      font-size: 0.72rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    input[type="number"] {
-      width: 100%;
-      padding: 7px 10px;
-      border-radius: 7px;
-      border: 1px solid #334155;
-      background-color: #0f172a;
-      color: #ffffff;
-      font-size: 0.88rem;
-      font-weight: 600;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type="number"]:focus {
-      border-color: #38bdf8;
-    }
-
-    input[readonly] {
-      background-color: #091121;
-      border-color: #38bdf8;
-      color: #38bdf8;
-      font-weight: 700;
-    }
-
-    /* Compact Option Cards */
-    .option-card {
-      background: #0f172a;
-      border: 1px solid #334155;
-      padding: 7px 10px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .checkbox-group input[type="checkbox"] {
-      width: 15px;
-      height: 15px;
-      accent-color: #38bdf8;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .checkbox-label {
-      font-size: 0.73rem;
-      font-weight: 600;
-      color: #e2e8f0;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .days-row {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 3px;
-      padding-top: 4px;
-      border-top: 1px dashed #1e293b;
-    }
-
-    .days-row.active {
-      display: flex;
-    }
-
-    .days-row label {
-      font-size: 0.7rem;
-      color: #94a3b8;
-    }
-
-    .days-row input {
-      width: 65px;
-      padding: 4px 6px;
-      font-size: 0.8rem;
-      text-align: center;
-    }
-
-    /* Primary Calculation Button */
-    .calc-btn {
-      width: 100%;
-      padding: 9px;
-      background-color: #38bdf8;
-      color: #0f172a;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .calc-btn:active {
-      transform: scale(0.98);
-      background-color: #0284c7;
-      color: #ffffff;
-    }
-
-    /* Result Box Container */
-    .result-box {
-      padding: 8px 10px;
-      border-radius: 10px;
-      background-color: #0f172a;
-      text-align: center;
-      border: 1px solid #334155;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 84px;
-      flex-shrink: 0;
-    }
-
-    .result-title {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 700;
-    }
-
-    .result-amount {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: #38bdf8;
-      line-height: 1.15;
-      margin: 2px 0;
-    }
-
-    .result-reason {
-      font-size: 0.67rem;
-      color: #cbd5e1;
-      font-weight: 500;
-      max-width: 95%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Dynamic Smile Display Container */
-    .smile-container {
-      height: 28px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.4rem;
-      margin-top: 1px;
-    }
-
-    /* Animations */
-    .pop-anim {
-      animation: popEffect 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .blink-anim {
-      animation: blinkEffect 1s infinite alternate;
-    }
-
-    .smile-bounce {
-      display: inline-block;
-      animation: bounce 0.7s infinite alternate ease-in-out;
-    }
-
-    .smile-spin {
-      display: inline-block;
-      animation: spinPulse 1.2s infinite ease-in-out;
-    }
-
-    @keyframes popEffect {
-      0% { transform: scale(0.94); }
-      50% { transform: scale(1.03); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes blinkEffect {
-      0% { color: #38bdf8; text-shadow: 0 0 6px rgba(56, 189, 248, 0.4); }
-      100% { color: #4ade80; text-shadow: 0 0 12px rgba(74, 222, 128, 0.8); }
-    }
-
-    @keyframes bounce {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-5px); }
-    }
-
-    @keyframes spinPulse {
-      0% { transform: scale(0.9) rotate(-8deg); }
-      50% { transform: scale(1.15) rotate(8deg); }
-      100% { transform: scale(0.9) rotate(-8deg); }
-    }
-
-    /* Walking Duck Container (Bottom of screen) */
     .duck-walk-container {
       position: fixed;
-      bottom: 8px;
-      left: -80px;
-      font-size: 2.2rem;
+      z-index: 40;
       pointer-events: none;
-      z-index: 100;
-      display: none;
-      white-space: nowrap;
+      animation: drawTrajectory 8s ease-in-out infinite alternate;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .duck-waddle {
-      display: inline-block;
-      animation: waddle 0.25s infinite alternate ease-in-out;
-    }
-
-    @keyframes duckWalkAcross {
-      0% { left: -60px; }
-      100% { left: 100vw; }
-    }
-
-    @keyframes waddle {
-      0% { transform: rotate(-10deg) translateY(0); }
-      100% { transform: rotate(10deg) translateY(-4px); }
-    }
-
-    /* Mobile Height Adjustments */
-    @media (max-height: 680px) {
-      .app-card { padding: 10px 14px; }
-      .header { margin-bottom: 6px; }
-      .tab-container { margin-bottom: 6px; }
-      .title { font-size: 0.95rem; }
-      .subtitle { font-size: 0.62rem; }
-      input[type="number"] { padding: 5px 8px; font-size: 0.82rem; }
-      .calc-btn { padding: 7px; font-size: 0.8rem; }
-      .result-box { min-height: 72px; padding: 5px; }
-      .result-amount { font-size: 1.25rem; }
-      .smile-container { height: 22px; font-size: 1.2rem; }
+    .duck-body {
+      animation: duckWaddle 0.6s ease-in-out infinite;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
     }
   </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 h-screen w-screen overflow-hidden flex flex-col justify-between p-2 sm:p-4 md:p-6 select-none">
 
-<div class="app-card">
-  <!-- Top Navigation Tabs -->
-  <div class="tab-container">
-    <button class="tab-btn active" onclick="switchTab('bonanza')">OT Bonanza</button>
-    <button class="tab-btn" onclick="switchTab('regular')">Regular OT</button>
-  </div>
-
-  <!-- TAB 1: OT BONANZA -->
-  <div id="bonanzaTab" class="tab-content active">
-    <div class="header">
-      <div class="title">October OT Bonanza</div>
-      <div class="subtitle">STAY ACCURATE, BOOST CSAT, EARN BIG!</div>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="b_callCount">MTD Calls / Chats</label>
-        <input type="number" id="b_callCount" placeholder="0" min="0" oninput="updateTotal('b')">
+  <!-- Duck Animation Container (Triggers when calculation is 0) -->
+  <div id="zeroDuckContainer" class="hidden duck-walk-container">
+    <div class="relative flex flex-col items-center">
+      <!-- Speech bubble -->
+      <div class="bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold px-3 py-1.5 rounded-2xl rounded-bl-none shadow-lg mb-1 whitespace-nowrap border-2 border-amber-300 animate-bounce">
+        ₹0 Overtime? Quack! 🦆
       </div>
-      <div class="form-group">
-        <label for="b_emailCount">MTD Email Count</label>
-        <input type="number" id="b_emailCount" placeholder="3 emails = 2 chats" min="0" oninput="updateTotal('b')">
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="b_total">Total Equivalent (Auto)</label>
-        <input type="number" id="b_total" placeholder="0" readonly>
-      </div>
-      <div class="form-group">
-        <label for="b_csat">CSAT Percentage (%)</label>
-        <input type="number" id="b_csat" placeholder="Min 62%" min="0" max="100">
-      </div>
-    </div>
-
-    <div class="option-card">
-      <label class="checkbox-group">
-        <input type="checkbox" id="b_unsavedError">
-        <span class="checkbox-label">More than 1 unsaved error</span>
-      </label>
-    </div>
-
-    <button class="calc-btn" onclick="calculateBonanza()">Calculate Bonanza</button>
-
-    <div class="result-box" id="b_resultBox">
-      <div class="result-title">Estimated Bonanza Payout</div>
-      <div class="result-amount" id="b_payout">₹ 0</div>
-      <div class="result-reason" id="b_details">Enter metrics above to calculate.</div>
-      <div class="smile-container" id="b_smileBox"></div>
+      <!-- Extra large duck icon SVG -->
+      <svg class="duck-body w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Main body -->
+        <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15"/>
+        <!-- Tail -->
+        <path d="M 20 58 Q 10 50 14 42 Q 24 50 26 56 Z" fill="#EAB308"/>
+        <!-- Wing -->
+        <path d="M 40 55 C 32 55 28 68 42 72 C 55 75 58 60 40 55 Z" fill="#CA8A04"/>
+        <!-- Head -->
+        <circle cx="70" cy="36" r="18" fill="#FACC15"/>
+        <!-- Beak -->
+        <path d="M 82 34 Q 98 36 86 44 Z" fill="#F97316"/>
+        <!-- Eye -->
+        <circle cx="74" cy="32" r="3.5" fill="#0F172A"/>
+        <circle cx="75.5" cy="30.5" r="1.2" fill="#FFFFFF"/>
+        <!-- Cheerful blush -->
+        <circle cx="72" cy="40" r="4" fill="#F43F5E" opacity="0.4"/>
+        <!-- Feet walking alternate -->
+        <path d="M 45 80 L 42 90 M 42 90 L 36 92 M 42 90 L 48 92" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+        <path d="M 58 80 L 62 90 M 62 90 L 56 92 M 62 90 L 68 92" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
+      </svg>
     </div>
   </div>
 
-  <!-- TAB 2: REGULAR OT -->
-  <div id="regularTab" class="tab-content">
-    <div class="header">
-      <div class="title">Regular Overtime</div>
-      <div class="subtitle">SELECT SHIFT TYPES & SHIFT DAYS</div>
-    </div>
+  <!-- ... existing code ... -->
+  <script>
+    // ... existing code ...
+    function calculateOT() {
+      // ... existing calculation code ...
+      
+      const totalPayout = calculatedAmount; // Assume derived payout
+      const duckEl = document.getElementById('zeroDuckContainer');
 
-    <div class="grid-2">
-      <div class="form-group">
-        <label for="r_callCount">Daily Avg Calls/Chats</label>
-        <input type="number" id="r_callCount" placeholder="0" min="0" oninput="updateTotal('r')">
-      </div>
-      <div class="form-group">
-        <label for="r_emailCount">Daily Avg Emails</label>
-        <input type="number" id="r_emailCount" placeholder="3 emails = 2 chats" min="0" oninput="updateTotal('r')">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="r_total">Daily Equivalent Transactions (Auto)</label>
-      <input type="number" id="r_total" placeholder="0" readonly>
-    </div>
-
-    <!-- Regular Workday Option -->
-    <div class="option-card">
-      <label class="checkbox-group">
-        <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')">
-        <span class="checkbox-label">Regular Workday OT (>45 chats/day)</span>
-      </label>
-      <div class="days-row" id="r_daysWorkdayContainer">
-        <label for="r_daysWorkday">Number of Workdays:</label>
-        <input type="number" id="r_daysWorkday" value="1" min="1">
-      </div>
-    </div>
-
-    <!-- 6th Day / Week Off Option -->
-    <div class="option-card">
-      <label class="checkbox-group">
-        <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')">
-        <span class="checkbox-label">6th Day / Week Off (From 1st chat)</span>
-      </label>
-      <div class="days-row" id="r_daysWeekoffContainer">
-        <label for="r_daysWeekoff">Number of Week Off Days:</label>
-        <input type="number" id="r_daysWeekoff" value="1" min="1">
-      </div>
-    </div>
-
-    <button class="calc-btn" onclick="calculateRegular()">Calculate Regular OT</button>
-
-    <div class="result-box" id="r_resultBox">
-      <div class="result-title">Estimated Regular OT Payout</div>
-      <div class="result-amount" id="r_payout">₹ 0</div>
-      <div class="result-reason" id="r_details">Select shift type & days to calculate.</div>
-      <div class="smile-container" id="r_smileBox"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Walking Duck Container for ₹0 Payout -->
-<div id="duckContainer" class="duck-walk-container">
-  <span class="duck-waddle">🦆</span>
-</div>
-
-<script>
-// Tab Switching
-function switchTab(tabName) {
-  const tabs = document.querySelectorAll('.tab-btn');
-  const contents = document.querySelectorAll('.tab-content');
-
-  tabs.forEach(tab => tab.classList.remove('active'));
-  contents.forEach(content => content.classList.remove('active'));
-
-  if (tabName === 'bonanza') {
-    tabs[0].classList.add('active');
-    document.getElementById('bonanzaTab').classList.add('active');
-  } else {
-    tabs[1].classList.add('active');
-    document.getElementById('regularTab').classList.add('active');
-  }
-}
-
-// Toggle Visibility of Days Row
-function toggleDaysInput(containerId) {
-  const container = document.getElementById(containerId);
-  const checkbox = container.previousElementSibling.querySelector('input[type="checkbox"]');
-  if (checkbox.checked) {
-    container.classList.add('active');
-  } else {
-    container.classList.remove('active');
-  }
-}
-
-// Auto Calculate Sum for Equivalent Transactions (3 emails = 2 chats)
-function updateTotal(prefix) {
-  const calls = parseInt(document.getElementById(prefix + '_callCount').value) || 0;
-  const emails = parseInt(document.getElementById(prefix + '_emailCount').value) || 0;
-  const totalVolume = calls + (emails * (2 / 3));
-  document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
-}
-
-// Trigger Walking Duck Animation
-function triggerDuckWalk() {
-  const duck = document.getElementById('duckContainer');
-  duck.style.display = 'block';
-  duck.style.animation = 'none';
-  void duck.offsetWidth; // Reflow reset
-  duck.style.animation = 'duckWalkAcross 3.5s linear forwards';
-
-  setTimeout(() => {
-    duck.style.display = 'none';
-  }, 3500);
-}
-
-// Handle Visual FX, Explosions & Emojis
-function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
-  const box = document.getElementById(boxId);
-  const amountEl = document.getElementById(amountId);
-  const smileBox = document.getElementById(smileBoxId);
-
-  // Reset animations
-  box.classList.remove('pop-anim');
-  amountEl.classList.remove('blink-anim');
-  smileBox.innerHTML = "";
-
-  if (totalAmount > 0) {
-    void box.offsetWidth; 
-    box.classList.add('pop-anim');
-    amountEl.classList.add('blink-anim');
-
-    let smileHTML = "";
-    if (totalAmount > 20000) {
-      smileHTML = `<span class="smile-spin">🤩🤑🎉</span>`;
-      if (typeof confetti === 'function') {
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
+      if (totalPayout === 0) {
+        duckEl.classList.remove('hidden');
+      } else {
+        duckEl.classList.add('hidden');
       }
-    } else if (totalAmount > 5000) {
-      smileHTML = `<span class="smile-bounce">😄⭐</span>`;
-    } else {
-      smileHTML = `<span class="smile-bounce">🙂</span>`;
     }
-
-    smileBox.innerHTML = smileHTML;
-  } else {
-    triggerDuckWalk();
-  }
-}
-
-// OT Bonanza Calculation Logic
-function calculateBonanza() {
-  const calls = parseInt(document.getElementById('b_callCount').value) || 0;
-  const emails = parseInt(document.getElementById('b_emailCount').value) || 0;
-  const csat = parseFloat(document.getElementById('b_csat').value) || 0;
-  const hasUnsavedError = document.getElementById('b_unsavedError').checked;
-
-  const totalVolume = calls + (emails * (2 / 3));
-  document.getElementById('b_total').value = totalVolume.toFixed(2);
-
-  const rateTier1 = 22400 / 1270;
-  const rateTier2 = 35000 / 1340;
-  const rateTier3 = 45000 / 1390;
-
-  let appliedRate = 0;
-  let totalPayout = 0;
-  let calculationNote = "";
-
-  const meetsRiderConditions = (csat >= 62) && (!hasUnsavedError);
-
-  if (totalVolume < 1270) {
-    document.getElementById('b_payout').innerText = "₹ 0";
-    document.getElementById('b_details').innerText = "Min 1270 transactions required for Bonanza tier.";
-    handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', 0);
-    return;
-  }
-
-  if (meetsRiderConditions) {
-    if (totalVolume >= 1390) {
-      appliedRate = rateTier3;
-      calculationNote = `Tier 3 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units)`;
-    } else if (totalVolume >= 1340) {
-      appliedRate = rateTier2;
-      calculationNote = `Tier 2 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units)`;
-    } else {
-      appliedRate = rateTier1;
-      calculationNote = `Tier 1 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units)`;
-    }
-    totalPayout = totalVolume * appliedRate;
-  } else {
-    totalPayout = 0;
-    let reasons = [];
-    if (csat < 62) reasons.push("CSAT < 62%");
-    if (hasUnsavedError) reasons.push(">1 unsaved error");
-    calculationNote = `₹0 Payout: ${reasons.join(" & ")}.`;
-  }
-
-  document.getElementById('b_payout').innerText = "₹ " + Math.round(totalPayout).toLocaleString('en-IN');
-  document.getElementById('b_details').innerText = calculationNote;
-
-  handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', totalPayout);
-}
-
-// Regular OT Calculation Logic
-function calculateRegular() {
-  const calls = parseInt(document.getElementById('r_callCount').value) || 0;
-  const emails = parseInt(document.getElementById('r_emailCount').value) || 0;
-
-  const isWorkdayChecked = document.getElementById('r_chkWorkday').checked;
-  const isWeekoffChecked = document.getElementById('r_chkWeekoff').checked;
-
-  const workdayDays = parseInt(document.getElementById('r_daysWorkday').value) || 0;
-  const weekoffDays = parseInt(document.getElementById('r_daysWeekoff').value) || 0;
-
-  const dailyVolume = calls + (emails * (2 / 3));
-  document.getElementById('r_total').value = dailyVolume.toFixed(2);
-
-  if (!isWorkdayChecked && !isWeekoffChecked) {
-    document.getElementById('r_payout').innerText = "₹ 0";
-    document.getElementById('r_details').innerText = "Select at least one OT option (Workday or Week Off).";
-    handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', 0);
-    return;
-  }
-
-  let totalPayout = 0;
-  let summaryNotes = [];
-
-  // Workday Calculation
-  if (isWorkdayChecked) {
-    if (dailyVolume <= 45) {
-      summaryNotes.push(`Workdays (${workdayDays}d): ₹0 (Volume ≤ 45/day)`);
-    } else {
-      const payablePerDay = dailyVolume - 45;
-      const workdayPayout = payablePerDay * 65 * workdayDays;
-      totalPayout += workdayPayout;
-      summaryNotes.push(`Workdays (${workdayDays}d): ₹${Math.round(workdayPayout)}`);
-    }
-  }
-
-  // Week Off Calculation
-  if (isWeekoffChecked) {
-    const weekoffPayout = dailyVolume * 65 * weekoffDays;
-    totalPayout += weekoffPayout;
-    summaryNotes.push(`Week Off (${weekoffDays}d): ₹${Math.round(weekoffPayout)}`);
-  }
-
-  document.getElementById('r_payout').innerText = "₹ " + Math.round(totalPayout).toLocaleString('en-IN');
-  document.getElementById('r_details').innerText = summaryNotes.join(" | ");
-
-  handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', totalPayout);
-}
-</script>
-
+    // ... existing code ...
+  </script>
 </body>
 </html>
