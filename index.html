@@ -1,10 +1,44 @@
-<!-- ... existing code ... -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OT Calculator Hub</title>
+  <!-- Tailwind CSS & Confetti Library -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
-    body {
+    html, body {
       font-family: 'Inter', sans-serif;
       overscroll-behavior: none;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Floating Rupee Background Animation */
+    .rupee-bg {
+      position: absolute;
+      color: rgba(56, 189, 248, 0.07);
+      font-weight: 800;
+      user-select: none;
+      pointer-events: none;
+      animation: floatRupee linear infinite alternate;
+    }
+
+    @keyframes floatRupee {
+      0% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+      }
+      50% {
+        transform: translateY(-20px) rotate(8deg) scale(1.05);
+      }
+      100% {
+        transform: translateY(-40px) rotate(-8deg) scale(1.1);
+      }
     }
 
     /* Waddle Animation */
@@ -21,25 +55,25 @@
         opacity: 0;
         transform: scale(0.6);
       }
-      10% {
+      15% {
         opacity: 1;
       }
-      90% {
+      85% {
         opacity: 1;
       }
       100% {
-        top: min(65vh, 480px);
-        left: min(50vw, 400px);
+        top: calc(50% + 80px);
+        left: 50%;
         opacity: 0.95;
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
       }
     }
 
     .duck-walk-container {
       position: fixed;
-      z-index: 40;
+      z-index: 50;
       pointer-events: none;
-      animation: drawTrajectory 8s ease-in-out infinite alternate;
+      animation: drawTrajectory 7s ease-in-out infinite alternate;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -47,21 +81,72 @@
 
     .duck-body {
       animation: duckWaddle 0.6s ease-in-out infinite;
-      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+    }
+
+    /* Dynamic Smile Animations */
+    .smile-bounce {
+      display: inline-block;
+      animation: bounce 0.8s infinite alternate ease-in-out;
+    }
+    .smile-spin {
+      display: inline-block;
+      animation: spinPulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
+    }
+
+    @keyframes spinPulse {
+      0% { transform: scale(0.8) rotate(-10deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(0.8) rotate(-10deg); }
+    }
+
+    .pop-anim {
+      animation: popEffect 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .blink-anim {
+      animation: blinkEffect 1s infinite alternate;
+    }
+
+    @keyframes popEffect {
+      0% { transform: scale(0.96); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes blinkEffect {
+      0% { color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.4); }
+      100% { color: #4ade80; text-shadow: 0 0 20px rgba(74, 222, 128, 0.8); }
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 h-screen w-screen overflow-hidden flex flex-col justify-between p-2 sm:p-4 md:p-6 select-none">
+<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex items-center justify-center p-3 sm:p-6 md:p-8 select-none relative">
+
+  <!-- Transparent Rupee Background Pattern -->
+  <div id="rupeeBgContainer" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="rupee-bg text-6xl sm:text-8xl" style="top: 8%; left: 5%; animation-duration: 8s;">₹</div>
+    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 15%; right: 8%; animation-duration: 10s; animation-delay: -2s;">₹</div>
+    <div class="rupee-bg text-8xl sm:text-[11rem]" style="bottom: 10%; left: 8%; animation-duration: 9s; animation-delay: -4s;">₹</div>
+    <div class="rupee-bg text-6xl sm:text-8xl" style="bottom: 12%; right: 12%; animation-duration: 11s; animation-delay: -1s;">₹</div>
+    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 45%; left: 3%; animation-duration: 7s; animation-delay: -3s;">₹</div>
+    <div class="rupee-bg text-5xl sm:text-7xl" style="top: 48%; right: 4%; animation-duration: 12s; animation-delay: -5s;">₹</div>
+    <div class="rupee-bg text-7xl sm:text-9xl" style="top: 2%; left: 45%; animation-duration: 9s; animation-delay: -2s;">₹</div>
+    <div class="rupee-bg text-8xl sm:text-[10rem]" style="bottom: 2%; left: 42%; animation-duration: 10s; animation-delay: -6s;">₹</div>
+  </div>
 
   <!-- Duck Animation Container (Triggers when calculation is 0) -->
   <div id="zeroDuckContainer" class="hidden duck-walk-container">
     <div class="relative flex flex-col items-center">
       <!-- Speech bubble -->
-      <div class="bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold px-3 py-1.5 rounded-2xl rounded-bl-none shadow-lg mb-1 whitespace-nowrap border-2 border-amber-300 animate-bounce">
+      <div class="bg-amber-400 text-slate-950 text-xs sm:text-base font-extrabold px-4 py-2 rounded-2xl rounded-bl-none shadow-2xl mb-1 whitespace-nowrap border-2 border-amber-300 animate-bounce">
         ₹0 Overtime? Quack! 🦆
       </div>
-      <!-- Extra large duck icon SVG -->
-      <svg class="duck-body w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Large duck icon SVG -->
+      <svg class="duck-body w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Main body -->
         <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15"/>
         <!-- Tail -->
@@ -84,22 +169,326 @@
     </div>
   </div>
 
-  <!-- ... existing code ... -->
-  <script>
-    // ... existing code ...
-    function calculateOT() {
-      // ... existing calculation code ...
-      
-      const totalPayout = calculatedAmount; // Assume derived payout
-      const duckEl = document.getElementById('zeroDuckContainer');
+  <!-- MAIN CALCULATOR CARD (Significantly bigger & screen filling) -->
+  <div class="relative z-10 bg-slate-900/90 backdrop-blur-md border-2 border-sky-400/80 rounded-2xl p-4 sm:p-7 md:p-8 w-full max-w-3xl md:max-w-4xl max-h-[96vh] flex flex-col justify-between shadow-[0_0_50px_rgba(56,189,248,0.25)]">
+    
+    <!-- Tab Controls -->
+    <div class="grid grid-cols-2 gap-3 mb-3 sm:mb-5">
+      <button id="btnTabBonanza" onclick="switchTab('bonanza')" class="py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30">
+        OT Bonanza
+      </button>
+      <button id="btnTabRegular" onclick="switchTab('regular')" class="py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200">
+        Regular OT
+      </button>
+    </div>
 
-      if (totalPayout === 0) {
-        duckEl.classList.remove('hidden');
+    <!-- TAB 1: OT BONANZA -->
+    <div id="tabBonanza" class="flex-1 flex flex-col justify-between space-y-3 sm:space-y-4">
+      <div class="text-center">
+        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl md:text-3xl tracking-wider uppercase">October OT Bonanza</h1>
+        <p class="text-slate-300 text-xs sm:text-sm md:text-base font-semibold mt-0.5">STAY ACCURATE, BOOST CSAT, EARN BIG!</p>
+      </div>
+
+      <!-- Input Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Calls / Chats</label>
+          <input type="number" id="b_callCount" placeholder="0" min="0" oninput="updateTotal('b')"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Emails (3 emails = 2 chats)</label>
+          <input type="number" id="b_emailCount" placeholder="0" min="0" oninput="updateTotal('b')"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Total Equivalent (Auto)</label>
+          <input type="number" id="b_total" placeholder="0.00" readonly
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-sky-400 font-bold outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">CSAT Percentage (%)</label>
+          <input type="number" id="b_csat" placeholder="Min. required: 62%" min="0" max="100"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+        </div>
+      </div>
+
+      <!-- Unsaved Error Checkbox -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 sm:p-3 flex items-center gap-3">
+        <input type="checkbox" id="b_unsavedError" class="w-5 h-5 accent-sky-400 cursor-pointer">
+        <label for="b_unsavedError" class="text-xs sm:text-sm font-medium text-slate-200 cursor-pointer">
+          More than 1 unsaved error
+        </label>
+      </div>
+
+      <!-- Calculate Button -->
+      <button onclick="calculateBonanza()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-lg md:text-xl py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+        Calculate Bonanza
+      </button>
+
+      <!-- Result Card -->
+      <div id="b_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 text-center relative flex flex-col justify-center min-h-[90px] sm:min-h-[110px]">
+        <span class="text-slate-400 text-xs sm:text-sm font-medium">ESTIMATED BONANZA PAYOUT</span>
+        <div id="b_payout" class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-sky-400 my-1">₹ 0</div>
+        <p id="b_details" class="text-slate-300 text-xs sm:text-sm">Enter metrics to calculate.</p>
+        <div id="b_smileBox" class="absolute top-2 right-4 text-2xl sm:text-4xl"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: REGULAR OT -->
+    <div id="tabRegular" class="hidden flex-1 flex flex-col justify-between space-y-3 sm:space-y-4">
+      <div class="text-center">
+        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl md:text-3xl tracking-wider uppercase">Regular Overtime</h1>
+        <p class="text-slate-300 text-xs sm:text-sm md:text-base font-semibold mt-0.5">SELECT SHIFT TYPES & ENTER DAYS</p>
+      </div>
+
+      <!-- Daily Averages -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Calls / Chats</label>
+          <input type="number" id="r_callCount" placeholder="0" min="0" oninput="updateTotal('r')"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm sm:text-base text-white outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Emails (3e = 2c)</label>
+          <input type="number" id="r_emailCount" placeholder="0" min="0" oninput="updateTotal('r')"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm sm:text-base text-white outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Equivalent (Auto)</label>
+          <input type="number" id="r_total" placeholder="0.00" readonly
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm sm:text-base text-sky-400 font-bold outline-none">
+        </div>
+      </div>
+
+      <!-- Shift Options Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Regular Workday Option -->
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')" class="w-5 h-5 accent-sky-400 cursor-pointer">
+            <label for="r_chkWorkday" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+              Regular Workday OT <span class="text-sky-400 text-xs block font-normal">(Threshold: 45 chats)</span>
+            </label>
+          </div>
+          <div id="r_daysWorkdayContainer" class="hidden mt-2">
+            <label class="block text-xs text-slate-400 mb-1">Number of Workdays:</label>
+            <input type="number" id="r_daysWorkday" value="1" min="1"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white outline-none">
+          </div>
+        </div>
+
+        <!-- Week Off Option -->
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')" class="w-5 h-5 accent-sky-400 cursor-pointer">
+            <label for="r_chkWeekoff" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
+              6th Day / Week Off <span class="text-sky-400 text-xs block font-normal">(Paid from 1st chat)</span>
+            </label>
+          </div>
+          <div id="r_daysWeekoffContainer" class="hidden mt-2">
+            <label class="block text-xs text-slate-400 mb-1">Number of Week Off Days:</label>
+            <input type="number" id="r_daysWeekoff" value="1" min="1"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculate Button -->
+      <button onclick="calculateRegular()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-lg md:text-xl py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+        Calculate Regular OT
+      </button>
+
+      <!-- Result Card -->
+      <div id="r_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 text-center relative flex flex-col justify-center min-h-[90px] sm:min-h-[110px]">
+        <span class="text-slate-400 text-xs sm:text-sm font-medium">ESTIMATED REGULAR OT PAYOUT</span>
+        <div id="r_payout" class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-sky-400 my-1">₹ 0</div>
+        <p id="r_details" class="text-slate-300 text-xs sm:text-sm">Select shift type & enter days to calculate.</p>
+        <div id="r_smileBox" class="absolute top-2 right-4 text-2xl sm:text-4xl"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tab switching
+    function switchTab(tabName) {
+      const bBtn = document.getElementById('btnTabBonanza');
+      const rBtn = document.getElementById('btnTabRegular');
+      const bTab = document.getElementById('tabBonanza');
+      const rTab = document.getElementById('tabRegular');
+
+      if (tabName === 'bonanza') {
+        bBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        rBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        bTab.classList.remove('hidden');
+        bTab.classList.add('flex');
+        rTab.classList.add('hidden');
+        rTab.classList.remove('flex');
       } else {
-        duckEl.classList.add('hidden');
+        rBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        bBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        rTab.classList.remove('hidden');
+        rTab.classList.add('flex');
+        bTab.classList.add('hidden');
+        bTab.classList.remove('flex');
       }
     }
-    // ... existing code ...
+
+    // Toggle sub-inputs for days
+    function toggleDaysInput(containerId) {
+      const container = document.getElementById(containerId);
+      const checkbox = container.parentElement.querySelector('input[type="checkbox"]');
+      container.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    // Auto sum calculation
+    function updateTotal(prefix) {
+      const calls = parseFloat(document.getElementById(prefix + '_callCount').value) || 0;
+      const emails = parseFloat(document.getElementById(prefix + '_emailCount').value) || 0;
+      const totalVolume = calls + (emails * (2 / 3));
+      document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
+    }
+
+    // Dynamic animation handler
+    function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
+      const box = document.getElementById(boxId);
+      const amountEl = document.getElementById(amountId);
+      const smileBox = document.getElementById(smileBoxId);
+      const duckContainer = document.getElementById('zeroDuckContainer');
+
+      box.classList.remove('pop-anim');
+      amountEl.classList.remove('blink-anim');
+      smileBox.innerHTML = "";
+
+      if (totalAmount > 0) {
+        duckContainer.classList.add('hidden');
+
+        void box.offsetWidth;
+        box.classList.add('pop-anim');
+        amountEl.classList.add('blink-anim');
+
+        let smileHTML = "";
+        if (totalAmount > 20000) {
+          smileHTML = `<span class="smile-spin">🤩🤑🎉</span>`;
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+          }
+        } else if (totalAmount > 5000) {
+          smileHTML = `<span class="smile-bounce">😄⭐</span>`;
+        } else {
+          smileHTML = `<span class="smile-bounce">🙂</span>`;
+        }
+        smileBox.innerHTML = smileHTML;
+      } else {
+        duckContainer.classList.remove('hidden');
+      }
+    }
+
+    // Calculate OT Bonanza
+    function calculateBonanza() {
+      const calls = parseFloat(document.getElementById('b_callCount').value) || 0;
+      const emails = parseFloat(document.getElementById('b_emailCount').value) || 0;
+      const csat = parseFloat(document.getElementById('b_csat').value) || 0;
+      const hasUnsavedError = document.getElementById('b_unsavedError').checked;
+
+      const totalVolume = calls + (emails * (2 / 3));
+      document.getElementById('b_total').value = totalVolume.toFixed(2);
+
+      const rateTier1 = 22400 / 1270;
+      const rateTier2 = 35000 / 1340;
+      const rateTier3 = 45000 / 1390;
+
+      let appliedRate = 0;
+      let totalPayout = 0;
+      let note = "";
+
+      const meetsRiderConditions = (csat >= 62) && (!hasUnsavedError);
+
+      if (totalVolume < 1270) {
+        document.getElementById('b_payout').innerText = "₹ 0";
+        document.getElementById('b_details').innerText = "Min 1270 transactions required for Bonanza tier.";
+        handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', 0);
+        return;
+      }
+
+      if (meetsRiderConditions) {
+        if (totalVolume >= 1390) {
+          appliedRate = rateTier3;
+          note = `Tier 3 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units).`;
+        } else if (totalVolume >= 1340) {
+          appliedRate = rateTier2;
+          note = `Tier 2 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units).`;
+        } else {
+          appliedRate = rateTier1;
+          note = `Tier 1 rate applied (₹${appliedRate.toFixed(2)}/unit for ${totalVolume.toFixed(2)} units).`;
+        }
+        totalPayout = totalVolume * appliedRate;
+      } else {
+        totalPayout = 0;
+        let reasons = [];
+        if (csat < 62) reasons.push("CSAT < 62%");
+        if (hasUnsavedError) reasons.push(">1 unsaved error");
+        note = `Criteria missed due to ${reasons.join(" and ")}.`;
+      }
+
+      document.getElementById('b_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+      document.getElementById('b_details').innerText = note;
+
+      handleAnimations('b_resultBox', 'b_payout', 'b_smileBox', totalPayout);
+    }
+
+    // Calculate Regular OT
+    function calculateRegular() {
+      const calls = parseFloat(document.getElementById('r_callCount').value) || 0;
+      const emails = parseFloat(document.getElementById('r_emailCount').value) || 0;
+
+      const isWorkdayChecked = document.getElementById('r_chkWorkday').checked;
+      const isWeekoffChecked = document.getElementById('r_chkWeekoff').checked;
+
+      const workdayDays = parseFloat(document.getElementById('r_daysWorkday').value) || 0;
+      const weekoffDays = parseFloat(document.getElementById('r_daysWeekoff').value) || 0;
+
+      const dailyVolume = calls + (emails * (2 / 3));
+      document.getElementById('r_total').value = dailyVolume.toFixed(2);
+
+      if (!isWorkdayChecked && !isWeekoffChecked) {
+        document.getElementById('r_payout').innerText = "₹ 0";
+        document.getElementById('r_details').innerText = "Please check at least one OT option.";
+        handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', 0);
+        return;
+      }
+
+      let totalPayout = 0;
+      let summaryNotes = [];
+
+      if (isWorkdayChecked) {
+        if (dailyVolume <= 45) {
+          summaryNotes.push(`Workdays (${workdayDays}d): ₹0 (Volume ≤ 45 threshold)`);
+        } else {
+          const payablePerDay = dailyVolume - 45;
+          const workdayPayout = payablePerDay * 65 * workdayDays;
+          totalPayout += workdayPayout;
+          summaryNotes.push(`Workdays (${workdayDays}d): ₹${workdayPayout.toFixed(2)} (${payablePerDay.toFixed(2)} extra chats/d @ ₹65)`);
+        }
+      }
+
+      if (isWeekoffChecked) {
+        const weekoffPayout = dailyVolume * 65 * weekoffDays;
+        totalPayout += weekoffPayout;
+        summaryNotes.push(`Week Off (${weekoffDays}d): ₹${weekoffPayout.toFixed(2)} (${dailyVolume.toFixed(2)} chats/d @ ₹65 from 1st chat)`);
+      }
+
+      document.getElementById('r_payout').innerText = "₹ " + totalPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+      document.getElementById('r_details').innerText = summaryNotes.join(" | ");
+
+      handleAnimations('r_resultBox', 'r_payout', 'r_smileBox', totalPayout);
+    }
   </script>
 </body>
 </html>
