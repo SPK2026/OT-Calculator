@@ -14,15 +14,17 @@
     html, body {
       font-family: 'Inter', sans-serif;
       overscroll-behavior: none;
-      height: 100%;
-      width: 100%;
+      height: 100vh;
+      width: 100vw;
       overflow: hidden;
+      margin: 0;
+      padding: 0;
     }
 
     /* Floating Rupee Background Animation */
     .rupee-bg {
       position: absolute;
-      color: rgba(56, 189, 248, 0.07);
+      color: rgba(56, 189, 248, 0.08);
       font-weight: 800;
       user-select: none;
       pointer-events: none;
@@ -34,54 +36,55 @@
         transform: translateY(0px) rotate(0deg) scale(1);
       }
       50% {
-        transform: translateY(-20px) rotate(8deg) scale(1.05);
+        transform: translateY(-25px) rotate(10deg) scale(1.05);
       }
       100% {
-        transform: translateY(-40px) rotate(-8deg) scale(1.1);
+        transform: translateY(-50px) rotate(-10deg) scale(1.1);
       }
     }
 
-    /* Waddle Animation */
-    @keyframes duckWaddle {
-      0%, 100% { transform: rotate(-8deg) translateY(0); }
-      50% { transform: rotate(8deg) translateY(-8px); }
-    }
-
-    /* Trajectory animation from top-left corner to calculation box */
-    @keyframes drawTrajectory {
+    /* Duck Flying Animation - Non-interfering Overlay */
+    @keyframes flyAcross {
       0% {
-        top: 2%;
-        left: 2%;
+        transform: translate(-120vw, -30vh) scale(0.6) rotate(-10deg);
         opacity: 0;
-        transform: scale(0.6);
       }
       15% {
-        opacity: 1;
+        opacity: 0.65;
       }
       85% {
-        opacity: 1;
+        opacity: 0.65;
       }
       100% {
-        top: calc(50% + 80px);
-        left: 50%;
-        opacity: 0.95;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(120vw, 40vh) scale(1.1) rotate(10deg);
+        opacity: 0;
       }
     }
 
-    .duck-walk-container {
+    @keyframes duckWaddle {
+      0%, 100% { transform: rotate(-6deg) translateY(0); }
+      50% { transform: rotate(6deg) translateY(-10px); }
+    }
+
+    .duck-fly-overlay {
       position: fixed;
-      z-index: 50;
-      pointer-events: none;
-      animation: drawTrajectory 7s ease-in-out infinite alternate;
+      top: 20%;
+      left: 0;
+      z-index: 40;
+      pointer-events: none; /* Never blocks input clicks */
       display: flex;
       flex-direction: column;
       align-items: center;
+      opacity: 0;
+    }
+
+    .duck-fly-active {
+      animation: flyAcross 6s ease-in-out infinite;
     }
 
     .duck-body {
-      animation: duckWaddle 0.6s ease-in-out infinite;
-      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+      animation: duckWaddle 0.5s ease-in-out infinite;
+      filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
     }
 
     /* Dynamic Smile Animations */
@@ -96,7 +99,7 @@
 
     @keyframes bounce {
       0% { transform: translateY(0); }
-      100% { transform: translateY(-10px); }
+      100% { transform: translateY(-8px); }
     }
 
     @keyframes spinPulse {
@@ -113,7 +116,7 @@
     }
 
     @keyframes popEffect {
-      0% { transform: scale(0.96); }
+      0% { transform: scale(0.97); }
       50% { transform: scale(1.02); }
       100% { transform: scale(1); }
     }
@@ -124,7 +127,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex items-center justify-center p-3 sm:p-6 md:p-8 select-none relative">
+<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex items-center justify-center p-3 sm:p-6 select-none relative">
 
   <!-- Transparent Rupee Background Pattern -->
   <div id="rupeeBgContainer" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -138,111 +141,102 @@
     <div class="rupee-bg text-8xl sm:text-[10rem]" style="bottom: 2%; left: 42%; animation-duration: 10s; animation-delay: -6s;">₹</div>
   </div>
 
-  <!-- Duck Animation Container (Triggers when calculation is 0) -->
-  <div id="zeroDuckContainer" class="hidden duck-walk-container">
-    <div class="relative flex flex-col items-center">
+  <!-- Transparent Flying Duck Overlay (Only appears on ₹0 Payout) -->
+  <div id="zeroDuckContainer" class="duck-fly-overlay hidden">
+    <div class="relative flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
       <!-- Speech bubble -->
-      <div class="bg-amber-400 text-slate-950 text-xs sm:text-base font-extrabold px-4 py-2 rounded-2xl rounded-bl-none shadow-2xl mb-1 whitespace-nowrap border-2 border-amber-300 animate-bounce">
+      <div class="bg-amber-400/90 text-slate-950 text-xs sm:text-sm font-black px-3 py-1.5 rounded-2xl rounded-bl-none shadow-lg mb-1 whitespace-nowrap border border-amber-300">
         ₹0 Overtime? Quack! 🦆
       </div>
-      <!-- Large duck icon SVG -->
-      <svg class="duck-body w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Main body -->
-        <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15"/>
-        <!-- Tail -->
-        <path d="M 20 58 Q 10 50 14 42 Q 24 50 26 56 Z" fill="#EAB308"/>
-        <!-- Wing -->
-        <path d="M 40 55 C 32 55 28 68 42 72 C 55 75 58 60 40 55 Z" fill="#CA8A04"/>
-        <!-- Head -->
-        <circle cx="70" cy="36" r="18" fill="#FACC15"/>
-        <!-- Beak -->
-        <path d="M 82 34 Q 98 36 86 44 Z" fill="#F97316"/>
-        <!-- Eye -->
+      <!-- Transparent Semi-transparent Duck SVG -->
+      <svg class="duck-body w-24 h-24 sm:w-32 sm:h-32 opacity-75" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="60" rx="32" ry="24" fill="#FACC15" fill-opacity="0.85"/>
+        <path d="M 20 58 Q 10 50 14 42 Q 24 50 26 56 Z" fill="#EAB308" fill-opacity="0.85"/>
+        <path d="M 40 55 C 32 55 28 68 42 72 C 55 75 58 60 40 55 Z" fill="#CA8A04" fill-opacity="0.85"/>
+        <circle cx="70" cy="36" r="18" fill="#FACC15" fill-opacity="0.85"/>
+        <path d="M 82 34 Q 98 36 86 44 Z" fill="#F97316" fill-opacity="0.85"/>
         <circle cx="74" cy="32" r="3.5" fill="#0F172A"/>
         <circle cx="75.5" cy="30.5" r="1.2" fill="#FFFFFF"/>
-        <!-- Cheerful blush -->
-        <circle cx="72" cy="40" r="4" fill="#F43F5E" opacity="0.4"/>
-        <!-- Feet walking alternate -->
+        <circle cx="72" cy="40" r="4" fill="#F43F5E" opacity="0.5"/>
         <path d="M 45 80 L 42 90 M 42 90 L 36 92 M 42 90 L 48 92" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
         <path d="M 58 80 L 62 90 M 62 90 L 56 92 M 62 90 L 68 92" stroke="#EA580C" stroke-width="4" stroke-linecap="round"/>
       </svg>
     </div>
   </div>
 
-  <!-- MAIN CALCULATOR CARD (Significantly bigger & screen filling) -->
-  <div class="relative z-10 bg-slate-900/90 backdrop-blur-md border-2 border-sky-400/80 rounded-2xl p-4 sm:p-7 md:p-8 w-full max-w-3xl md:max-w-4xl max-h-[96vh] flex flex-col justify-between shadow-[0_0_50px_rgba(56,189,248,0.25)]">
+  <div class="relative z-10 bg-slate-900/95 backdrop-blur-md border-2 border-sky-400/80 rounded-2xl p-4 sm:p-6 w-full max-w-2xl md:max-w-3xl flex flex-col justify-between shadow-[0_0_50px_rgba(56,189,248,0.25)]">
     
     <!-- Tab Controls -->
-    <div class="grid grid-cols-2 gap-3 mb-3 sm:mb-5">
-      <button id="btnTabBonanza" onclick="switchTab('bonanza')" class="py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30">
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <button id="btnTabBonanza" onclick="switchTab('bonanza')" class="py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30">
         OT Bonanza
       </button>
-      <button id="btnTabRegular" onclick="switchTab('regular')" class="py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200">
+      <button id="btnTabRegular" onclick="switchTab('regular')" class="py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200">
         Regular OT
       </button>
     </div>
 
     <!-- TAB 1: OT BONANZA -->
-    <div id="tabBonanza" class="flex-1 flex flex-col justify-between space-y-3 sm:space-y-4">
+    <div id="tabBonanza" class="flex flex-col space-y-3.5">
       <div class="text-center">
-        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl md:text-3xl tracking-wider uppercase">October OT Bonanza</h1>
-        <p class="text-slate-300 text-xs sm:text-sm md:text-base font-semibold mt-0.5">STAY ACCURATE, BOOST CSAT, EARN BIG!</p>
+        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl tracking-wider uppercase">October OT Bonanza</h1>
+        <p class="text-slate-300 text-xs sm:text-sm font-semibold mt-0.5">STAY ACCURATE, BOOST CSAT, EARN BIG!</p>
       </div>
 
       <!-- Input Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Calls / Chats</label>
           <input type="number" id="b_callCount" placeholder="0" min="0" oninput="updateTotal('b')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
         </div>
 
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">MTD Emails (3 emails = 2 chats)</label>
           <input type="number" id="b_emailCount" placeholder="0" min="0" oninput="updateTotal('b')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
         </div>
 
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Total Equivalent (Auto)</label>
           <input type="number" id="b_total" placeholder="0.00" readonly
-            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-sky-400 font-bold outline-none">
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm text-sky-400 font-bold outline-none">
         </div>
 
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">CSAT Percentage (%)</label>
-          <input type="number" id="b_csat" placeholder="Min. required: 62%" min="0" max="100"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 sm:py-2.5 text-sm sm:text-base text-white outline-none transition">
+          <input type="number" id="b_csat" placeholder="Min required: 62%" min="0" max="100"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
         </div>
       </div>
 
       <!-- Unsaved Error Checkbox -->
-      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 sm:p-3 flex items-center gap-3">
-        <input type="checkbox" id="b_unsavedError" class="w-5 h-5 accent-sky-400 cursor-pointer">
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 flex items-center gap-3">
+        <input type="checkbox" id="b_unsavedError" class="w-4 h-4 accent-sky-400 cursor-pointer">
         <label for="b_unsavedError" class="text-xs sm:text-sm font-medium text-slate-200 cursor-pointer">
           More than 1 unsaved error
         </label>
       </div>
 
       <!-- Calculate Button -->
-      <button onclick="calculateBonanza()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-lg md:text-xl py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+      <button onclick="calculateBonanza()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-base py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
         Calculate Bonanza
       </button>
 
       <!-- Result Card -->
-      <div id="b_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 text-center relative flex flex-col justify-center min-h-[90px] sm:min-h-[110px]">
-        <span class="text-slate-400 text-xs sm:text-sm font-medium">ESTIMATED BONANZA PAYOUT</span>
-        <div id="b_payout" class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-sky-400 my-1">₹ 0</div>
-        <p id="b_details" class="text-slate-300 text-xs sm:text-sm">Enter metrics to calculate.</p>
-        <div id="b_smileBox" class="absolute top-2 right-4 text-2xl sm:text-4xl"></div>
+      <div id="b_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center relative flex flex-col justify-center min-h-[90px]">
+        <span class="text-slate-400 text-xs font-medium">ESTIMATED BONANZA PAYOUT</span>
+        <div id="b_payout" class="text-2xl sm:text-4xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
+        <p id="b_details" class="text-slate-300 text-xs">Enter metrics to calculate.</p>
+        <div id="b_smileBox" class="absolute top-2 right-3 text-2xl sm:text-3xl"></div>
       </div>
     </div>
 
     <!-- TAB 2: REGULAR OT -->
-    <div id="tabRegular" class="hidden flex-1 flex flex-col justify-between space-y-3 sm:space-y-4">
+    <div id="tabRegular" class="hidden flex-col space-y-3.5">
       <div class="text-center">
-        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl md:text-3xl tracking-wider uppercase">Regular Overtime</h1>
-        <p class="text-slate-300 text-xs sm:text-sm md:text-base font-semibold mt-0.5">SELECT SHIFT TYPES & ENTER DAYS</p>
+        <h1 class="text-sky-400 font-extrabold text-lg sm:text-2xl tracking-wider uppercase">Regular Overtime</h1>
+        <p class="text-slate-300 text-xs sm:text-sm font-semibold mt-0.5">SELECT SHIFT TYPES & ENTER DAYS</p>
       </div>
 
       <!-- Daily Averages -->
@@ -250,19 +244,19 @@
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Calls / Chats</label>
           <input type="number" id="r_callCount" placeholder="0" min="0" oninput="updateTotal('r')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm sm:text-base text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
         </div>
 
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Avg Emails (3e = 2c)</label>
           <input type="number" id="r_emailCount" placeholder="0" min="0" oninput="updateTotal('r')"
-            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm sm:text-base text-white outline-none transition">
+            class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3 py-2 text-sm text-white outline-none transition">
         </div>
 
         <div>
           <label class="block text-xs sm:text-sm font-semibold text-slate-300 mb-1">Daily Equivalent (Auto)</label>
           <input type="number" id="r_total" placeholder="0.00" readonly
-            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm sm:text-base text-sky-400 font-bold outline-none">
+            class="w-full bg-slate-950/80 border border-sky-500/50 rounded-xl px-3 py-2 text-sm text-sky-400 font-bold outline-none">
         </div>
       </div>
 
@@ -271,7 +265,7 @@
         <!-- Regular Workday Option -->
         <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div class="flex items-center gap-2.5">
-            <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')" class="w-5 h-5 accent-sky-400 cursor-pointer">
+            <input type="checkbox" id="r_chkWorkday" onchange="toggleDaysInput('r_daysWorkdayContainer')" class="w-4 h-4 accent-sky-400 cursor-pointer">
             <label for="r_chkWorkday" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
               Regular Workday OT <span class="text-sky-400 text-xs block font-normal">(Threshold: 45 chats)</span>
             </label>
@@ -279,14 +273,14 @@
           <div id="r_daysWorkdayContainer" class="hidden mt-2">
             <label class="block text-xs text-slate-400 mb-1">Number of Workdays:</label>
             <input type="number" id="r_daysWorkday" value="1" min="1"
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white outline-none">
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none">
           </div>
         </div>
 
         <!-- Week Off Option -->
         <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div class="flex items-center gap-2.5">
-            <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')" class="w-5 h-5 accent-sky-400 cursor-pointer">
+            <input type="checkbox" id="r_chkWeekoff" onchange="toggleDaysInput('r_daysWeekoffContainer')" class="w-4 h-4 accent-sky-400 cursor-pointer">
             <label for="r_chkWeekoff" class="text-xs sm:text-sm font-semibold text-slate-200 cursor-pointer">
               6th Day / Week Off <span class="text-sky-400 text-xs block font-normal">(Paid from 1st chat)</span>
             </label>
@@ -294,29 +288,29 @@
           <div id="r_daysWeekoffContainer" class="hidden mt-2">
             <label class="block text-xs text-slate-400 mb-1">Number of Week Off Days:</label>
             <input type="number" id="r_daysWeekoff" value="1" min="1"
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white outline-none">
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none">
           </div>
         </div>
       </div>
 
       <!-- Calculate Button -->
-      <button onclick="calculateRegular()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-lg md:text-xl py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
+      <button onclick="calculateRegular()" class="w-full bg-sky-400 hover:bg-sky-300 active:scale-[0.99] text-slate-950 font-black text-sm sm:text-base py-3 rounded-xl transition shadow-lg shadow-sky-400/20 uppercase tracking-wide">
         Calculate Regular OT
       </button>
 
       <!-- Result Card -->
-      <div id="r_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 text-center relative flex flex-col justify-center min-h-[90px] sm:min-h-[110px]">
-        <span class="text-slate-400 text-xs sm:text-sm font-medium">ESTIMATED REGULAR OT PAYOUT</span>
-        <div id="r_payout" class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-sky-400 my-1">₹ 0</div>
-        <p id="r_details" class="text-slate-300 text-xs sm:text-sm">Select shift type & enter days to calculate.</p>
-        <div id="r_smileBox" class="absolute top-2 right-4 text-2xl sm:text-4xl"></div>
+      <div id="r_resultBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center relative flex flex-col justify-center min-h-[90px]">
+        <span class="text-slate-400 text-xs font-medium">ESTIMATED REGULAR OT PAYOUT</span>
+        <div id="r_payout" class="text-2xl sm:text-4xl font-extrabold text-sky-400 my-0.5">₹ 0</div>
+        <p id="r_details" class="text-slate-300 text-xs">Select shift type & enter days to calculate.</p>
+        <div id="r_smileBox" class="absolute top-2 right-3 text-2xl sm:text-3xl"></div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // Tab switching
+    // Tab switching handler
     function switchTab(tabName) {
       const bBtn = document.getElementById('btnTabBonanza');
       const rBtn = document.getElementById('btnTabRegular');
@@ -324,15 +318,15 @@
       const rTab = document.getElementById('tabRegular');
 
       if (tabName === 'bonanza') {
-        bBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
-        rBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        bBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        rBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
         bTab.classList.remove('hidden');
         bTab.classList.add('flex');
         rTab.classList.add('hidden');
         rTab.classList.remove('flex');
       } else {
-        rBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
-        bBtn.className = "py-2.5 sm:py-3 md:py-3.5 px-4 rounded-xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
+        rBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-sky-400 text-slate-950 shadow-lg shadow-sky-400/30";
+        bBtn.className = "py-2.5 sm:py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-all duration-300 bg-slate-950/80 text-slate-400 border border-slate-700 hover:text-slate-200";
         rTab.classList.remove('hidden');
         rTab.classList.add('flex');
         bTab.classList.add('hidden');
@@ -347,7 +341,7 @@
       container.style.display = checkbox.checked ? 'block' : 'none';
     }
 
-    // Auto sum calculation
+    // Auto sum conversion calculation
     function updateTotal(prefix) {
       const calls = parseFloat(document.getElementById(prefix + '_callCount').value) || 0;
       const emails = parseFloat(document.getElementById(prefix + '_emailCount').value) || 0;
@@ -355,7 +349,7 @@
       document.getElementById(prefix + '_total').value = totalVolume.toFixed(2);
     }
 
-    // Dynamic animation handler
+    // Handle flying duck & positive payout animations
     function handleAnimations(boxId, amountId, smileBoxId, totalAmount) {
       const box = document.getElementById(boxId);
       const amountEl = document.getElementById(amountId);
@@ -367,7 +361,9 @@
       smileBox.innerHTML = "";
 
       if (totalAmount > 0) {
+        // Hide duck when payout is greater than 0
         duckContainer.classList.add('hidden');
+        duckContainer.classList.remove('duck-fly-active');
 
         void box.offsetWidth;
         box.classList.add('pop-anim');
@@ -386,11 +382,16 @@
         }
         smileBox.innerHTML = smileHTML;
       } else {
+        // Trigger flying transparent duck overlay when payout is zero
         duckContainer.classList.remove('hidden');
+        // Restart animation
+        duckContainer.classList.remove('duck-fly-active');
+        void duckContainer.offsetWidth;
+        duckContainer.classList.add('duck-fly-active');
       }
     }
 
-    // Calculate OT Bonanza
+    // Calculate OT Bonanza Scheme
     function calculateBonanza() {
       const calls = parseFloat(document.getElementById('b_callCount').value) || 0;
       const emails = parseFloat(document.getElementById('b_emailCount').value) || 0;
