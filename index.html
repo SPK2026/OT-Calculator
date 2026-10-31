@@ -148,7 +148,7 @@
         Diwali Attendance & OT Incentive 2026
       </h1>
       <p class="text-slate-300 text-[11px] sm:text-xs font-semibold">
-        Target: 240 Trans/Wk (48/Day) • ₹3,000/Wk Bonus • CSAT ≥ 65% & 0 Toll Gating Errors
+        Target: 240 Trans/Wk (48/Day) • ₹3,000/Wk Bonus • 0 Toll Gating Unsaved Error Mandatory for ₹100 Rate
       </p>
     </div>
 
@@ -337,27 +337,27 @@
         const unsavedBadge = document.getElementById('unsavedBadge');
         if (hasUnsavedError) {
           unsavedBadge.className = "text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30";
-          unsavedBadge.innerText = "1+ Errors (Penalty)";
+          unsavedBadge.innerText = "1+ Errors (Penalty ₹70)";
         } else {
           unsavedBadge.className = "text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-          unsavedBadge.innerText = "0 Errors (Pass)";
+          unsavedBadge.innerText = "0 Errors (Pass ₹100)";
         }
 
         const is6thDay = document.getElementById('chk6thDay').checked;
         const days6th = is6thDay ? Math.max(1, parseFloat(document.getElementById('days6thCount').value) || 1) : 0;
         const vol6th = is6thDay ? (parseFloat(document.getElementById('vol6thDay').value) || 0) : 0;
 
-        // Quality rule as per flyer: CSAT >= 65% AND Toll Gating Unsaved Errors = 0
-        const meetsQuality = (csat >= 65) && (!hasUnsavedError);
-        const otRate = meetsQuality ? 100 : 70;
+        // ONLY Toll Gating Unsaved Error = 0 determines scheme payout rate (₹100 vs ₹70)
+        const meetsTollGating = !hasUnsavedError;
+        const otRate = meetsTollGating ? 100 : 70;
 
         let attendancePayout = 0;
         let aboveTargetPayout = 0;
         let ot6thDayPayout = 0;
         let totalWorkingDays = 0;
 
-        // 1. Weekly Attendance Payout (₹3,000 per week for meeting 240 target)
-        if (meetsQuality) {
+        // 1. Weekly Attendance Payout (₹3,000 per week for meeting 240 target & 0 toll gating errors)
+        if (meetsTollGating) {
           if (isWeek1) {
             totalWorkingDays += 5;
             if (dailyVol >= 48) attendancePayout += 3000;
@@ -384,15 +384,12 @@
 
         const totalPayout = attendancePayout + aboveTargetPayout + ot6thDayPayout;
 
-        // Explanatory messages matching flyer key takeaways
+        // Explanatory messages matching rules
         let details = [];
-        if (!meetsQuality) {
-          let reasons = [];
-          if (csat < 65) reasons.push(`CSAT ${csat}% < 65%`);
-          if (hasUnsavedError) reasons.push(`Toll Gating Unsaved Error > 0`);
-          details.push(`Quality Condition Failed (${reasons.join(" & ")}): Rate reduced to ₹70/trans & Weekly bonus forfeited.`);
+        if (!meetsTollGating) {
+          details.push(`Toll Gating Unsaved Error > 0: Payout rate reduced to ₹70/trans & Weekly Attendance bonus forfeited.`);
         } else {
-          details.push(`Quality Criteria Passed (CSAT ${csat}% ≥ 65% & 0 Toll Gating errors): ₹100/trans rate applied.`);
+          details.push(`0 Toll Gating Unsaved Errors: Scheme rate of ₹100/trans applied.`);
           if (totalWorkingDays > 0 && dailyVol < 48) {
             details.push(`Attendance target missed (${dailyVol.toFixed(1)}/48 daily avg needed).`);
           }
